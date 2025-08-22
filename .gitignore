@@ -83,3 +83,5 @@ configs/
 ehthumbs.db
 Thumbs.db*.yml
 *.properties
+manifest.temp.yml
+cf-manifest.yml

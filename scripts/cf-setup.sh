@@ -156,17 +156,56 @@ show_usage() {
     echo "Commands:"
     echo "  check           Check CF environment (default)"
     echo "  deploy APP      Deploy app to Cloud Foundry"
+    echo "  cleanup         Clean up temporary manifest files"
     echo "  help            Show this help message"
     echo ""
     echo "Examples:"
     echo "  $0                    # Check CF environment"
     echo "  $0 check              # Check CF environment"
     echo "  $0 deploy myapp       # Deploy 'myapp' to CF"
+    echo "  $0 cleanup            # Clean up temp files"
     echo ""
+}
+
+cleanup_temp_files() {
+    log_info "Cleaning up backup and temporary files..."
+    
+    local files_cleaned=0
+    # Only clean up backup/tmp files, keep main manifests for debugging
+    local temp_files=("cf-manifest.yml.bak" "cf-manifest.yml.tmp" "manifest.temp.yml.bak" "manifest.temp.yml.tmp")
+    
+    for file in "${temp_files[@]}"; do
+        if [ -f "$file" ]; then
+            rm -f "$file"
+            log_success "Removed $file"
+            ((files_cleaned++))
+        fi
+    done
+    
+    # Show what we're keeping
+    local kept_files=()
+    for file in cf-manifest.yml manifest.temp.yml; do
+        if [ -f "$file" ]; then
+            kept_files+=("$file")
+        fi
+    done
+    
+    if [ $files_cleaned -eq 0 ]; then
+        log_info "No backup files found to clean up"
+    else
+        log_success "Cleaned up $files_cleaned backup file(s)"
+    fi
+    
+    if [ ${#kept_files[@]} -gt 0 ]; then
+        log_info "Kept for debugging: ${kept_files[*]}"
+    fi
 }
 
 main() {
     case "${1:-check}" in
+        cleanup)
+            cleanup_temp_files
+            ;;
         check)
             log_info "Cloud Foundry Environment Check"
             echo "=================================="

@@ -72,13 +72,31 @@ if cf push "$APP_NAME" -f "$MANIFEST_TEMP"; then
     
     echo "🔍 Logs: cf logs $APP_NAME --recent"
     echo "🧪 Test the API: ./scripts/test-api.sh -c"
+    echo "🐛 Debug manifest: cf-manifest.yml (kept for troubleshooting)"
 else
     echo "❌ Deployment failed"
     exit 1
 fi
 
-# Clean up temporary manifest
-if [ -f "$MANIFEST_TEMP" ]; then
-    rm -f "$MANIFEST_TEMP"
-    echo "🧹 Cleaned up temporary manifest"
-fi
+# Clean up backup and temporary files (keep main manifest for debugging)
+cleanup_backup_files() {
+    local files_cleaned=0
+    
+    # Only clean up backup and temporary files, keep the main generated manifest
+    for file in manifest.temp.yml cf-manifest.yml.bak cf-manifest.yml.tmp manifest.temp.yml.bak manifest.temp.yml.tmp; do
+        if [ -f "$file" ]; then
+            rm -f "$file"
+            ((files_cleaned++))
+        fi
+    done
+    
+    if [ $files_cleaned -gt 0 ]; then
+        echo "🧹 Cleaned up $files_cleaned backup/temp file(s) (kept cf-manifest.yml for debugging)"
+    fi
+}
+
+# Ensure cleanup happens on script exit (success or failure)
+trap cleanup_backup_files EXIT
+
+# Clean up at the end as well
+cleanup_backup_files

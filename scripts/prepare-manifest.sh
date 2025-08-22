@@ -15,7 +15,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CONFIG_FILE="$SCRIPT_DIR/config.env"
 MANIFEST_FILE="$PROJECT_ROOT/manifest.yml"
-MANIFEST_TEMP="$PROJECT_ROOT/manifest.temp.yml"
+MANIFEST_TEMP="$PROJECT_ROOT/cf-manifest.yml"
 APP_NAME="imc-db-server"
 
 # Colors for output
@@ -158,9 +158,8 @@ create_temp_manifest() {
     
     # Remove the last line (which should be ---) and add routes + ---
     echo "${temp_content%---}" > "$MANIFEST_TEMP"
-    echo "  routes:" >> "$MANIFEST_TEMP"
+    echo "    routes:" >> "$MANIFEST_TEMP"
     echo "      - route: $APP_NAME.$domain" >> "$MANIFEST_TEMP"
-    echo "---" >> "$MANIFEST_TEMP"
     
     # Remove backup files
     rm -f "$MANIFEST_TEMP.bak"
@@ -170,10 +169,27 @@ create_temp_manifest() {
 
 # Clean up temporary files
 cleanup() {
-    # Only clean up if we're not being called from build script
+    # Always clean up backup files (they're not useful for debugging)
+    local backup_files=("$MANIFEST_TEMP.bak" "$MANIFEST_TEMP.tmp" "manifest.temp.yml.bak" "manifest.temp.yml.tmp")
+    local files_cleaned=0
+    
+    for file in "${backup_files[@]}"; do
+        if [ -f "$file" ]; then
+            rm -f "$file"
+            ((files_cleaned++))
+        fi
+    done
+    
+    # Only clean up main manifest if we're NOT being called from build script
+    # (so it stays around for debugging when called directly)
     if [ "$CALLED_FROM_BUILD" != "true" ] && [ -f "$MANIFEST_TEMP" ]; then
         rm -f "$MANIFEST_TEMP"
         log_info "Cleaned up temporary manifest"
+        ((files_cleaned++))
+    fi
+    
+    if [ $files_cleaned -gt 0 ] && [ "$CALLED_FROM_BUILD" != "true" ]; then
+        log_info "Cleaned up $files_cleaned temporary file(s)"
     fi
 }
 

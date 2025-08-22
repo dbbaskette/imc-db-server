@@ -115,6 +115,7 @@ We've enhanced the Cloud Foundry deployment with intelligent scripts that handle
 - Sets environment variables after app creation
 - Handles both new deployments and updates gracefully
 - Displays actual deployed app URL after deployment
+- Keeps `cf-manifest.yml` for debugging (ignored by git)
 
 **🧪 Smart Testing Script (`test-api.sh`)**
 - **Local Testing**: `./scripts/test-api.sh` (default)
