@@ -7,20 +7,9 @@
 set -e
 
 APP_NAME="imc-db-server"
-CONFIG_FILE="scripts/config.env"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "🏗️  Building IMC Database Server..."
-
-# Check if config.env exists
-if [ ! -f "$CONFIG_FILE" ]; then
-    echo "❌ Error: $CONFIG_FILE not found"
-    echo "📋 Please copy scripts/config.env.template to scripts/config.env and configure it"
-    exit 1
-fi
-
-# Source configuration
-echo "📋 Loading configuration from $CONFIG_FILE"
-source "$CONFIG_FILE"
 
 # Build the application
 echo "🔨 Building Maven project..."
@@ -51,36 +40,45 @@ echo "📍 Current target:"
 cf target
 echo ""
 
-# Set environment variables in Cloud Foundry
-echo "⚙️  Setting environment variables..."
-cf set-env "$APP_NAME" DB01_HOST "$DB01_HOST"
-cf set-env "$APP_NAME" DB01_PORT "$DB01_PORT"
-cf set-env "$APP_NAME" DB01_DATABASE "$DB01_DATABASE"
-cf set-env "$APP_NAME" DB01_USER "$DB01_USER"
-cf set-env "$APP_NAME" DB01_PASSWORD "$DB01_PASSWORD"
-cf set-env "$APP_NAME" SPRING_PROFILES_ACTIVE "cloud"
+# Prepare the manifest with environment variables and correct domain
+echo "📋 Preparing Cloud Foundry manifest..."
+MANIFEST_TEMP=$(cd "$SCRIPT_DIR" && CALLED_FROM_BUILD=true ./prepare-manifest.sh)
 
-# Push to Cloud Foundry
-echo "🚀 Pushing to Cloud Foundry..."
-cf push "$APP_NAME" -f manifest.yml
-
-echo "✅ Deployment complete!"
-
-# Get the actual deployed URL
-echo "📊 Getting deployed app URL..."
-if cf app "$APP_NAME" --guid >/dev/null 2>&1; then
-    local routes
-    routes=$(cf app "$APP_NAME" --guid 2>/dev/null | xargs -I {} cf curl "/v2/apps/{}/routes" 2>/dev/null | jq -r '.resources[].entity.host + "." + .resources[].entity.domain.name' 2>/dev/null || echo "")
-    
-    if [ -n "$routes" ]; then
-        local first_route=$(echo "$routes" | head -1)
-        echo "🌐 App URL: https://$first_route"
-    else
-        echo "⚠️  Could not retrieve app URL, check manually with: cf app $APP_NAME"
-    fi
-else
-    echo "⚠️  App not found, check deployment status with: cf app $APP_NAME"
+if [ $? -ne 0 ]; then
+    echo "❌ Failed to prepare manifest"
+    exit 1
 fi
 
-echo "🔍 Logs: cf logs $APP_NAME --recent"
-echo "🧪 Test the API: ./scripts/test-api.sh -c"
+# Deploy the application
+echo "🚀 Deploying to Cloud Foundry..."
+if cf push "$APP_NAME" -f "$MANIFEST_TEMP"; then
+    echo "✅ Deployment complete!"
+    
+    # Get the actual deployed URL
+    echo "📊 Getting deployed app URL..."
+    if cf app "$APP_NAME" --guid >/dev/null 2>&1; then
+        local routes
+        routes=$(cf app "$APP_NAME" --guid 2>/dev/null | xargs -I {} cf curl "/v2/apps/{}/routes" 2>/dev/null | jq -r '.resources[].entity.host + "." + .resources[].entity.domain.name' 2>/dev/null || echo "")
+        
+        if [ -n "$routes" ]; then
+            local first_route=$(echo "$routes" | head -1)
+            echo "🌐 App URL: https://$first_route"
+        else
+            echo "⚠️  Could not retrieve app URL, check manually with: cf app $APP_NAME"
+        fi
+    else
+        echo "⚠️  App not found, check deployment status with: cf app $APP_NAME"
+    fi
+    
+    echo "🔍 Logs: cf logs $APP_NAME --recent"
+    echo "🧪 Test the API: ./scripts/test-api.sh -c"
+else
+    echo "❌ Deployment failed"
+    exit 1
+fi
+
+# Clean up temporary manifest
+if [ -f "$MANIFEST_TEMP" ]; then
+    rm -f "$MANIFEST_TEMP"
+    echo "🧹 Cleaned up temporary manifest"
+fi

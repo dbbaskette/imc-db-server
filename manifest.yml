@@ -3,18 +3,24 @@ applications:
   - name: imc-db-server
     path: ./target/imc-db-server-1.1.0.jar
     memory: 1G
-    instances: 2
+    instances: 1
     buildpacks:
-      - java_buildpack
+      - java_buildpack_offline
     env:
       JAVA_OPTS: "-XX:+UseG1GC -XX:MaxMetaspaceSize=256m"
       JBP_CONFIG_OPEN_JDK_JRE: '{ version: 21.+ }'
       SPRING_PROFILES_ACTIVE: cloud
+      # Database configuration - will be overridden by build script
+      DB01_HOST: "PLACEHOLDER_HOST"
+      DB01_PORT: "PLACEHOLDER_PORT"
+      DB01_DATABASE: "PLACEHOLDER_DATABASE"
+      DB01_USER: "PLACEHOLDER_USER"
+      DB01_PASSWORD: "PLACEHOLDER_PASSWORD"
     services:
       # Uncomment and configure if using CF database services
       # - greenplum-db01
     health-check-type: http
     health-check-http-endpoint: /actuator/health
     timeout: 180
-    routes:
-      - route: imc-db-server.apps.your-cf-domain.com
+    # Routes will be set dynamically by build script
+    # using cf domains to get the available domain

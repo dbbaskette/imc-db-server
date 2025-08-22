@@ -1,5 +1,7 @@
 # IMC Database Server
 
+![IMC Logo](./assets/logo.png)
+
 > A multi-database Spring Boot service providing REST APIs for Insurance MegaCorp's Safe Driver Scoring, ML model management, and vehicle events data.
 
 [![Java](https://img.shields.io/badge/Java-21-blue.svg)](https://openjdk.org/projects/jdk/21/)
@@ -104,6 +106,29 @@ source scripts/config.env
 ./scripts/build-and-push.sh
 ```
 
+#### Enhanced Cloud Foundry Scripts
+
+We've enhanced the Cloud Foundry deployment with intelligent scripts that handle common deployment issues:
+
+**🔧 Build and Push Script (`build-and-push.sh`)**
+- Automatically detects if app exists and creates it if needed
+- Sets environment variables after app creation
+- Handles both new deployments and updates gracefully
+- Displays actual deployed app URL after deployment
+
+**🧪 Smart Testing Script (`test-api.sh`)**
+- **Local Testing**: `./scripts/test-api.sh` (default)
+- **Cloud Foundry Testing**: `./scripts/test-api.sh -c` (automatically detects deployed route)
+- **Custom URL Testing**: `./scripts/test-api.sh -u https://myapp.com`
+- **Instance Testing**: `./scripts/test-api.sh -i db02`
+
+**🛠️ CF Setup Helper (`cf-setup.sh`)**
+- Environment validation and troubleshooting
+- Direct app deployment: `./scripts/cf-setup.sh deploy imc-db-server`
+- Comprehensive error checking and guidance
+
+**📚 Complete Documentation**: See [scripts/README.md](scripts/README.md) for detailed usage examples.
+
 ## ⚙️ Configuration
 
 ### Database Instances
@@ -177,9 +202,67 @@ mvn clean package -DskipTests
 - **Performance monitoring** with correlation IDs and execution tracking
 - **Health monitoring** with database connection testing
 
+### 🆕 Recent Improvements & Fixes
+
+**Spring Boot 3.x Compatibility**
+- ✅ Fixed deprecated `@AutoConfigureTestDatabase` annotation
+- ✅ Updated test configuration for Spring Boot 3.x
+- ✅ Converted integration tests to use `@WebMvcTest` with proper mocking
+- ✅ All tests now passing (32/32)
+
+**Cloud Foundry Deployment**
+- ✅ Enhanced build script with intelligent app creation/update logic
+- ✅ Fixed environment variable setting for new apps
+- ✅ Added automatic route detection and display
+- ✅ Created comprehensive CF environment troubleshooting tools
+
+**JPA Entity Mapping**
+- ✅ Fixed `Map<String, BigDecimal>` to `jsonb` mapping issues
+- ✅ Implemented proper `JsonMapConverter` for complex data types
+- ✅ Resolved Hibernate type resolution warnings
+
+**Maven & Java Compatibility**
+- ✅ Created Maven wrapper for consistent Java 21 usage
+- ✅ Fixed Java version compatibility issues
+- ✅ Added `.mvn/jvm.config` for explicit Java 21 targeting
+
 See [DEVPLAN.md](DEVPLAN.md) for detailed development roadmap.
 
 ## 🔧 Development
+
+### Troubleshooting Common Issues
+
+**Cloud Foundry Deployment Issues**
+```bash
+# Check your CF environment
+./scripts/cf-setup.sh
+
+# Common fixes:
+cf login                    # Login to Cloud Foundry
+cf target -o <org> -s <space>  # Set target org/space
+cf delete imc-db-server    # Remove existing app if needed
+./scripts/build-and-push.sh    # Redeploy
+```
+
+**Test Failures**
+```bash
+# Run tests with verbose output
+mvn test -X
+
+# Check Java version compatibility
+java -version              # Should be Java 21
+mvn --version             # Maven should use Java 21
+
+# Clean and rebuild
+mvn clean package
+```
+
+**Database Connection Issues**
+```bash
+# Verify database credentials in scripts/config.env
+# Check database accessibility
+# Ensure proper network access to database hosts
+```
 
 ### Project Structure
 ```
