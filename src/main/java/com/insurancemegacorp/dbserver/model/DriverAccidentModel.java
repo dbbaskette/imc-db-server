@@ -1,104 +1,151 @@
 package com.insurancemegacorp.dbserver.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Map;
-import com.insurancemegacorp.dbserver.util.JsonMapConverter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import java.util.List;
 
 @Entity
 @Table(name = "driver_accident_model")
 public class DriverAccidentModel {
     
     @Id
-    @Column(name = "model_id")
-    private String modelId;
+    @Column(name = "num_iterations") // Use num_iterations as a simple ID since there's likely only one model
+    private Integer id;
     
-    @Column(name = "algorithm", length = 50)
-    private String algorithm;
+    @Column(name = "coef")
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    private List<Double> coef;
     
-    @Column(name = "accuracy", precision = 5, scale = 3)
-    private BigDecimal accuracy;
+    @Column(name = "log_likelihood")
+    private Double logLikelihood;
     
-    @Column(name = "num_iterations")
-    private Integer numIterations;
+    @Column(name = "std_err")
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    private List<Double> stdErr;
+    
+    @Column(name = "z_stats")
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    private List<Double> zStats;
+    
+    @Column(name = "p_values")
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    private List<Double> pValues;
+    
+    @Column(name = "odds_ratios")
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    private List<Double> oddsRatios;
+    
+    @Column(name = "condition_no")
+    private Double conditionNo;
     
     @Column(name = "num_rows_processed")
-    private Integer numRowsProcessed;
+    private Long numRowsProcessed;
     
-    @Column(name = "feature_weights", columnDefinition = "jsonb")
-    @Convert(converter = JsonMapConverter.class)
-    private Map<String, BigDecimal> featureWeights;
+    @Column(name = "num_missing_rows_skipped")
+    private Long numMissingRowsSkipped;
     
-    @Column(name = "created_date")
-    private LocalDateTime createdDate;
+
     
-    @Column(name = "status", length = 20)
-    private String status;
+    @Column(name = "variance_covariance")
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    private List<Double> varianceCovariance;
 
     public DriverAccidentModel() {}
 
-    public String getModelId() {
-        return modelId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setModelId(String modelId) {
-        this.modelId = modelId;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public String getAlgorithm() {
-        return algorithm;
+    public List<Double> getCoef() {
+        return coef;
     }
 
-    public void setAlgorithm(String algorithm) {
-        this.algorithm = algorithm;
+    public void setCoef(List<Double> coef) {
+        this.coef = coef;
     }
 
-    public BigDecimal getAccuracy() {
-        return accuracy;
+    public Double getLogLikelihood() {
+        return logLikelihood;
     }
 
-    public void setAccuracy(BigDecimal accuracy) {
-        this.accuracy = accuracy;
+    public void setLogLikelihood(Double logLikelihood) {
+        this.logLikelihood = logLikelihood;
     }
 
-    public Integer getNumIterations() {
-        return numIterations;
+    public List<Double> getStdErr() {
+        return stdErr;
     }
 
-    public void setNumIterations(Integer numIterations) {
-        this.numIterations = numIterations;
+    public void setStdErr(List<Double> stdErr) {
+        this.stdErr = stdErr;
     }
 
-    public Integer getNumRowsProcessed() {
+    public List<Double> getZStats() {
+        return zStats;
+    }
+
+    public void setZStats(List<Double> zStats) {
+        this.zStats = zStats;
+    }
+
+    public List<Double> getPValues() {
+        return pValues;
+    }
+
+    public void setPValues(List<Double> pValues) {
+        this.pValues = pValues;
+    }
+
+    public List<Double> getOddsRatios() {
+        return oddsRatios;
+    }
+
+    public void setOddsRatios(List<Double> oddsRatios) {
+        this.oddsRatios = oddsRatios;
+    }
+
+    public Double getConditionNo() {
+        return conditionNo;
+    }
+
+    public void setConditionNo(Double conditionNo) {
+        this.conditionNo = conditionNo;
+    }
+
+    public Long getNumRowsProcessed() {
         return numRowsProcessed;
     }
 
-    public void setNumRowsProcessed(Integer numRowsProcessed) {
+    public void setNumRowsProcessed(Long numRowsProcessed) {
         this.numRowsProcessed = numRowsProcessed;
     }
 
-    public Map<String, BigDecimal> getFeatureWeights() {
-        return featureWeights;
+    public Long getNumMissingRowsSkipped() {
+        return numMissingRowsSkipped;
     }
 
-    public void setFeatureWeights(Map<String, BigDecimal> featureWeights) {
-        this.featureWeights = featureWeights;
+    public void setNumMissingRowsSkipped(Long numMissingRowsSkipped) {
+        this.numMissingRowsSkipped = numMissingRowsSkipped;
     }
 
-    public LocalDateTime getCreatedDate() {
-        return createdDate;
+    public Integer getNumIterations() {
+        return id; // num_iterations is now the ID field
     }
 
-    public void setCreatedDate(LocalDateTime createdDate) {
-        this.createdDate = createdDate;
+    public void setNumIterations(Integer numIterations) {
+        this.id = numIterations; // num_iterations is now the ID field
     }
 
-    public String getStatus() {
-        return status;
+    public List<Double> getVarianceCovariance() {
+        return varianceCovariance;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setVarianceCovariance(List<Double> varianceCovariance) {
+        this.varianceCovariance = varianceCovariance;
     }
 }

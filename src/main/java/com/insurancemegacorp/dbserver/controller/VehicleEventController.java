@@ -51,10 +51,9 @@ public class VehicleEventController {
         return ResponseEntity.ok(ApiResponse.success(events).withExecutionTime(executionTime));
     }
 
-    @GetMapping("/vehicle-events/crashes")
-    public ResponseEntity<ApiResponse<Page<VehicleEventDto>>> getCrashEvents(
+    @GetMapping("/vehicle-events/high-gforce")
+    public ResponseEntity<ApiResponse<Page<VehicleEventDto>>> getHighGForceEvents(
             @PathVariable String instance,
-            @RequestParam(required = false) String severity,
             @RequestParam(defaultValue = "50") Integer limit,
             @RequestParam(required = false) Integer offset,
             @RequestParam(required = false) String order_by) {
@@ -62,12 +61,12 @@ public class VehicleEventController {
         long startTime = System.currentTimeMillis();
         validateInstance(instance);
 
-        Page<VehicleEventDto> crashes = vehicleEventService.findCrashEvents(
-                severity, limit, offset, order_by
+        Page<VehicleEventDto> highGForceEvents = vehicleEventService.findHighGForceEvents(
+                limit, offset, order_by
         );
 
         long executionTime = System.currentTimeMillis() - startTime;
-        return ResponseEntity.ok(ApiResponse.success(crashes).withExecutionTime(executionTime));
+        return ResponseEntity.ok(ApiResponse.success(highGForceEvents).withExecutionTime(executionTime));
     }
 
     @GetMapping("/telemetry/events-count")

@@ -31,7 +31,7 @@ public class QueryFilterBuilder {
 
     public Sort buildSort(String orderBy) {
         if (orderBy == null || orderBy.trim().isEmpty()) {
-            return Sort.by(Sort.Direction.DESC, "eventDate");
+            return Sort.by(Sort.Direction.DESC, "eventTime");
         }
 
         List<Sort.Order> orders = new ArrayList<>();
@@ -56,7 +56,7 @@ public class QueryFilterBuilder {
         }
         
         if (orders.isEmpty()) {
-            return Sort.by(Sort.Direction.DESC, "eventDate");
+            return Sort.by(Sort.Direction.DESC, "eventTime");
         }
         
         return Sort.by(orders);
@@ -64,15 +64,15 @@ public class QueryFilterBuilder {
 
     private String mapSortField(String field) {
         return switch (field.toLowerCase()) {
-            case "date", "event_date", "eventdate" -> "eventDate";
+            case "date", "event_date", "eventdate", "event_time", "eventtime" -> "eventTime";
             case "driver", "driver_id", "driverid" -> "driverId";
             case "vehicle", "vehicle_id", "vehicleid" -> "vehicleId";
             case "type", "event_type", "eventtype" -> "eventType";
             case "speed" -> "speedMph";
-            case "gforce", "g_force" -> "gforce";
+            case "gforce", "g_force" -> "gForce";
             case "severity" -> "severity";
-            case "lat", "latitude" -> "latitude";
-            case "lng", "lon", "longitude" -> "longitude";
+            case "lat", "latitude" -> "gpsLatitude";
+            case "lng", "lon", "longitude" -> "gpsLongitude";
             default -> null; // Invalid field, ignore
         };
     }

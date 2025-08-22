@@ -26,23 +26,43 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 log() {
-    echo -e "$1"
+    if [ "$CALLED_FROM_BUILD" = "true" ]; then
+        echo -e "$1" >&2
+    else
+        echo -e "$1"
+    fi
 }
 
 log_success() {
-    echo -e "${GREEN}✅ $1${NC}"
+    if [ "$CALLED_FROM_BUILD" = "true" ]; then
+        echo -e "${GREEN}✅ $1${NC}" >&2
+    else
+        echo -e "${GREEN}✅ $1${NC}"
+    fi
 }
 
 log_error() {
-    echo -e "${RED}❌ $1${NC}"
+    if [ "$CALLED_FROM_BUILD" = "true" ]; then
+        echo -e "${RED}❌ $1${NC}" >&2
+    else
+        echo -e "${RED}❌ $1${NC}"
+    fi
 }
 
 log_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
+    if [ "$CALLED_FROM_BUILD" = "true" ]; then
+        echo -e "${YELLOW}⚠️  $1${NC}" >&2
+    else
+        echo -e "${YELLOW}⚠️  $1${NC}"
+    fi
 }
 
 log_info() {
-    echo -e "${BLUE}ℹ️  $1${NC}"
+    if [ "$CALLED_FROM_BUILD" = "true" ]; then
+        echo -e "${BLUE}ℹ️  $1${NC}" >&2
+    else
+        echo -e "${BLUE}ℹ️  $1${NC}"
+    fi
 }
 
 # Check prerequisites
@@ -195,8 +215,14 @@ cleanup() {
 
 # Main execution
 main() {
+    # If called from build script, we'll handle output redirection per message
+    
     log_info "Preparing Cloud Foundry manifest..."
-    echo "=========================================="
+    if [ "$CALLED_FROM_BUILD" = "true" ]; then
+        echo "==========================================" >&2
+    else
+        echo "=========================================="
+    fi
     
     # Set up cleanup on exit
     trap cleanup EXIT
@@ -210,16 +236,16 @@ main() {
     create_temp_manifest "$domain"
     
     log_success "Manifest preparation complete!"
-    log_info "You can now deploy with: cf push -f $MANIFEST_TEMP"
+    log_info "You can now deploy with: cf push -f cf-manifest.yml"
     log_info "Or use the build script: ./scripts/build-and-push.sh"
     
     # Keep the temp file for the build script to use
-    # Output the full path for the build script
-    echo "$MANIFEST_TEMP"
+    # Output just the filename for the build script (to stdout)
+    echo "cf-manifest.yml"
     
     # Don't clean up if called from build script
     if [ "$CALLED_FROM_BUILD" = "true" ]; then
-        log_info "Keeping temporary manifest for build script: $MANIFEST_TEMP"
+        log_info "Keeping temporary manifest for build script: cf-manifest.yml"
         # Remove the cleanup trap
         trap - EXIT
     fi

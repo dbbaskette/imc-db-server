@@ -8,6 +8,7 @@ set -e
 
 APP_NAME="imc-db-server"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 echo "🏗️  Building IMC Database Server..."
 
@@ -42,12 +43,15 @@ echo ""
 
 # Prepare the manifest with environment variables and correct domain
 echo "📋 Preparing Cloud Foundry manifest..."
-MANIFEST_TEMP=$(cd "$SCRIPT_DIR" && CALLED_FROM_BUILD=true ./prepare-manifest.sh)
+MANIFEST_TEMP=$(cd "$SCRIPT_DIR" && CALLED_FROM_BUILD=true ./prepare-manifest.sh 2>/dev/null)
 
 if [ $? -ne 0 ]; then
     echo "❌ Failed to prepare manifest"
     exit 1
 fi
+
+# Convert to full path for the build script
+MANIFEST_TEMP="$PROJECT_ROOT/$MANIFEST_TEMP"
 
 # Deploy the application
 echo "🚀 Deploying to Cloud Foundry..."

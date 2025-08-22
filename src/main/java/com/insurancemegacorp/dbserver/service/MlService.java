@@ -48,14 +48,14 @@ public class MlService {
         }
 
         MlModelInfoDto dto = new MlModelInfoDto();
-        dto.setModelId(model.getModelId());
-        dto.setAlgorithm(model.getAlgorithm());
-        dto.setAccuracy(model.getAccuracy());
+        dto.setModelId(model.getId().toString()); // Use num_iterations as model ID
+        dto.setAlgorithm("MADlib Logistic Regression"); // Fixed algorithm name for MADlib
+        dto.setAccuracy(null); // Not available in MADlib output
         dto.setNumIterations(model.getNumIterations());
-        dto.setNumRowsProcessed(model.getNumRowsProcessed());
-        dto.setFeatureWeights(model.getFeatureWeights());
-        dto.setLastTrained(model.getCreatedDate());
-        dto.setStatus(model.getStatus());
+        dto.setNumRowsProcessed(model.getNumRowsProcessed().intValue()); // Convert Long to Integer
+        dto.setFeatureWeights(null); // MADlib uses coef array instead
+        dto.setLastTrained(null); // Not available in MADlib output
+        dto.setStatus("completed"); // Assume completed if data exists
 
         return dto;
     }

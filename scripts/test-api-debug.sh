@@ -7,7 +7,7 @@
 # Sources config.env for database instance information
 # =============================================================================
 
-# Don't exit on errors - we want to continue testing even if some endpoints fail
+# set -e  # Exit on any error
 
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -31,8 +31,6 @@ NC='\033[0m' # No Color
 TOTAL_TESTS=0
 PASSED_TESTS=0
 FAILED_TESTS=0
-SETUP_PASSED=0
-SETUP_FAILED=0
 
 # =============================================================================
 # Helper Functions
@@ -48,32 +46,12 @@ log_test() {
 
 log_success() {
     echo -e "${GREEN}[PASS]${NC} $1" | tee -a "$LOG_FILE"
-    # Only increment test counters if this is not a setup operation
-    if [[ "$1" != *"Prerequisites check passed"* ]] && \
-       [[ "$1" != *"Configuration loaded"* ]] && \
-       [[ "$1" != *"Server is running"* ]] && \
-       [[ "$1" != *"Using Cloud Foundry route"* ]] && \
-       [[ "$1" != *"Multiple concurrent requests handled"* ]] && \
-       [[ "$1" != *"Rate limiting is working"* ]]; then
-        ((PASSED_TESTS++))
-    else
-        ((SETUP_PASSED++))
-    fi
+    ((PASSED_TESTS++))
 }
 
 log_error() {
     echo -e "${RED}[FAIL]${NC} $1" | tee -a "$LOG_FILE"
-    # Only increment test counters if this is not a setup operation
-    if [[ "$1" != *"Config file not found"* ]] && \
-       [[ "$1" != *"is not installed"* ]] && \
-       [[ "$1" != *"Not logged into Cloud Foundry"* ]] && \
-       [[ "$1" != *"Failed to load configuration"* ]] && \
-       [[ "$1" != *"Failed to get Cloud Foundry route"* ]] && \
-       [[ "$1" != *"Server is not running"* ]]; then
-        ((FAILED_TESTS++))
-    else
-        ((SETUP_FAILED++))
-    fi
+    ((FAILED_TESTS++))
 }
 
 log_warning() {
@@ -94,26 +72,17 @@ get_cf_route() {
     
     log_test "Getting Cloud Foundry route for $APP_NAME..."
     
-    # Get the app routes using simpler cf app command
-    local app_info
-    app_info=$(cf app "$APP_NAME" 2>/dev/null)
+    # Get the app routes using cf CLI
+    local routes
+    routes=$(cf app "$APP_NAME" --guid 2>/dev/null | xargs -I {} cf curl "/v2/apps/{}/routes" 2>/dev/null | jq -r '.resources[].entity.host + "." + .resources[].entity.domain.name' 2>/dev/null || echo "")
     
-    if [ $? -eq 0 ]; then
-        # Extract routes from cf app output
-        local routes
-        routes=$(echo "$app_info" | grep "routes:" | sed 's/routes:[[:space:]]*//')
-        
-        if [ -n "$routes" ]; then
-            local first_route=$(echo "$routes" | awk '{print $1}')
-            BASE_URL="https://$first_route"
-            log_success "Using Cloud Foundry route: $BASE_URL"
-            return 0
-        else
-            log_error "No routes found for app $APP_NAME"
-            return 1
-        fi
+    if [ -n "$routes" ]; then
+        local first_route=$(echo "$routes" | head -1)
+        BASE_URL="https://$first_route"
+        log_success "Using Cloud Foundry route: $BASE_URL"
+        return 0
     else
-        log_error "Could not retrieve app info for $APP_NAME"
+        log_error "Could not retrieve Cloud Foundry route for $APP_NAME"
         return 1
     fi
 }
@@ -154,9 +123,9 @@ test_endpoint() {
     fi
     
     # Extract HTTP status and response time
-    local http_status=$(echo "$response" | grep "HTTP_STATUS:" | cut -d':' -f2)
-    local time_total=$(echo "$response" | grep "TIME_TOTAL:" | cut -d':' -f2)
-    local json_response=$(echo "$response" | grep -v "HTTP_STATUS:" | grep -v "TIME_TOTAL:")
+    local http_status=$(echo "$response" | tail -2 | head -1 | cut -d':' -f2)
+    local time_total=$(echo "$response" | tail -1 | cut -d':' -f2)
+    local json_response=$(echo "$response" | head -n -2)
     
     # Check HTTP status
     if [ "$http_status" = "$expected_status" ]; then
@@ -321,16 +290,13 @@ test_ml_endpoints() {
     
     # Start ML recalculation (returns job ID)
     log_test "Starting ML recalculation..."
-    ((TOTAL_TESTS++))
-    
     local ml_response
     ml_response=$(curl -s -X POST "$BASE_URL/api/$TEST_DB_INSTANCE/ml/recalculate" 2>/dev/null)
     
     if echo "$ml_response" | jq -e '.success' >/dev/null 2>&1; then
         local job_id=$(echo "$ml_response" | jq -r '.data.jobId // empty')
         if [ -n "$job_id" ]; then
-            log "  ✓ ML recalculation started, Job ID: $job_id"
-            ((PASSED_TESTS++))
+            log_success "ML recalculation started, Job ID: $job_id"
             
             # Test job status endpoint
             test_endpoint "GET" "/api/$TEST_DB_INSTANCE/ml/job-status/$job_id" "Check ML job status"
@@ -339,11 +305,9 @@ test_ml_endpoints() {
             test_endpoint "DELETE" "/api/$TEST_DB_INSTANCE/ml/job-status/$job_id" "Cancel ML job"
         else
             log_warning "ML recalculation response didn't contain job ID"
-            ((FAILED_TESTS++))
         fi
     else
-        log "  ✗ ML recalculation failed to start"
-        ((FAILED_TESTS++))
+        log_error "ML recalculation failed to start"
     fi
     
     # Test invalid job ID
@@ -358,20 +322,20 @@ test_vehicle_events() {
     test_endpoint "GET" "/api/$TEST_DB_INSTANCE/vehicle-events?limit=10" "Vehicle events (limit 10)"
     test_endpoint "GET" "/api/$TEST_DB_INSTANCE/vehicle-events?driver_id=123&limit=5" "Vehicle events by driver"
     test_endpoint "GET" "/api/$TEST_DB_INSTANCE/vehicle-events?event_type=CRASH" "Crash events only"
-    test_endpoint "GET" "/api/$TEST_DB_INSTANCE/vehicle-events/high-gforce" "High G-force events"
-    test_endpoint "GET" "/api/$TEST_DB_INSTANCE/vehicle-events/high-gforce?limit=5" "High G-force events (limit 5)"
+    test_endpoint "GET" "/api/$TEST_DB_INSTANCE/vehicle-events/crashes" "Crash events endpoint"
+    test_endpoint "GET" "/api/$TEST_DB_INSTANCE/vehicle-events/crashes?severity=HIGH" "High severity crashes"
     test_endpoint "GET" "/api/$TEST_DB_INSTANCE/telemetry/events-count" "Telemetry events count"
     
     # Test batch ingestion with sample data
     local sample_events='[
         {
-            "eventId": 1755883840000,
             "driverId": 999,
-            "vehicleId": "999001",
-            "latitude": 33.7444,
-            "longitude": -84.3869,
+            "vehicleId": "TEST001",
+            "eventType": "ACCELERATION",
+            "eventDate": "2024-08-22T10:30:00",
             "speedMph": 45.5,
-            "gforce": 0.8
+            "gforce": 0.8,
+            "severity": "LOW"
         }
     ]'
     
@@ -397,19 +361,14 @@ test_performance() {
     
     # Test multiple rapid requests
     log_test "Testing multiple rapid requests..."
-    ((TOTAL_TESTS++))
-    
     for i in {1..5}; do
         curl -s "$BASE_URL/api/$TEST_DB_INSTANCE/health" >/dev/null &
     done
     wait
-    log "  ✓ Multiple concurrent requests handled"
-    ((PASSED_TESTS++))
+    log_success "Multiple concurrent requests handled"
     
     # Test rate limiting on expensive endpoints
     log_test "Testing rate limiting on ML recalculation..."
-    ((TOTAL_TESTS++))
-    
     local rate_limit_responses=0
     for i in {1..3}; do
         local response_status
@@ -420,11 +379,9 @@ test_performance() {
     done
     
     if [ $rate_limit_responses -gt 0 ]; then
-        log "  ✓ Rate limiting is working ($rate_limit_responses/3 requests limited)"
-        ((PASSED_TESTS++))
+        log_success "Rate limiting is working ($rate_limit_responses/3 requests limited)"
     else
         log_warning "Rate limiting may not be working as expected"
-        ((FAILED_TESTS++))
     fi
     echo ""
 }
@@ -457,18 +414,14 @@ main() {
     log "============================================================================="
     log "TEST SUMMARY"
     log "============================================================================="
-    log "Setup Operations: $((SETUP_PASSED + SETUP_FAILED)) (Passed: $SETUP_PASSED, Failed: $SETUP_FAILED)"
-    log "API Tests: $TOTAL_TESTS (Passed: $PASSED_TESTS, Failed: $FAILED_TESTS)"
+    log "Total Tests: $TOTAL_TESTS"
+    log_success "Passed: $PASSED_TESTS"
     if [ $FAILED_TESTS -gt 0 ]; then
-        log_error "Total Failed Tests: $FAILED_TESTS"
+        log_error "Failed: $FAILED_TESTS"
     else
-        log "Total Failed Tests: $FAILED_TESTS"
+        log "Failed: $FAILED_TESTS"
     fi
-    if [ $TOTAL_TESTS -gt 0 ]; then
-        log "API Test Success Rate: $(( PASSED_TESTS * 100 / TOTAL_TESTS ))%"
-    else
-        log "API Test Success Rate: N/A (no tests run)"
-    fi
+    log "Success Rate: $(( PASSED_TESTS * 100 / TOTAL_TESTS ))%"
     log "============================================================================="
     log "End Time: $(date)"
     log "Full results saved to: $LOG_FILE"

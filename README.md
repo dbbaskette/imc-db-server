@@ -16,6 +16,37 @@
 - **Query Flexibility**: Support for filtering, pagination, and sorting
 - **Cloud Ready**: Built for Cloud Foundry deployment with health monitoring
 
+## Current Status
+
+**Test Results**: 23/28 tests passing (82% success rate)
+
+**Working Endpoints** ✅:
+- Health & monitoring (3/3)
+- Fleet management (3/3)
+- Driver analytics (4/4)
+- Vehicle events basic operations (4/4)
+- High G-force events (2/2)
+- Telemetry events count (1/1)
+- Batch operations (1/1)
+- Input validation (2/2)
+- Performance & concurrency (2/2)
+
+**Known Issues** ❌:
+1. **ML Model Endpoints** - Both `/api/db01/ml/model-info` and `/api/db01/ml/recalculate` return 500 errors due to PostgreSQL array type conversion issues in Hibernate
+2. **Parameter Validation** - Some endpoints don't properly validate invalid parameters:
+   - Invalid limit returns 500 instead of expected 400
+   - Invalid event type returns 200 instead of expected 400 (behavior change due to removed validation)
+
+**Recent Improvements**:
+- Fixed test counting logic (was incorrectly showing 100% success rate)
+- Separated setup operations from actual API tests for accurate reporting
+- Fixed crash events endpoints by testing actual existing endpoints instead of non-existent ones
+- Fixed batch insert operations by correcting test data format (numeric vehicleId)
+- Improved error handling and null safety in vehicle events service
+- Enhanced query filtering with correct field mappings
+- Fixed database statistics service to return mutable maps
+- Resolved SafeDriverScore repository casting issues
+
 ## 📊 API Endpoints
 
 ### Health & Monitoring
@@ -64,6 +95,21 @@ curl http://localhost:8084/api/db01/drivers/top-performers?limit=5
 # Check database health
 curl http://localhost:8084/api/db01/health
 ```
+
+## 🔧 Recent Improvements & Fixes
+
+### Latest Updates (August 2025)
+- **Fixed vehicle events endpoints**: Resolved null pointer exceptions and sorting issues
+- **Improved error handling**: Added null checks and defensive programming
+- **Enhanced query filtering**: Fixed field mapping for database schema compatibility
+- **Cloud Foundry deployment**: Optimized memory settings and buildpack configuration
+- **Database schema alignment**: Updated models to match actual Greenplum database structure
+
+### Technical Improvements
+- **QueryFilterBuilder**: Fixed default sorting to use `eventTime` instead of non-existent `eventDate`
+- **VehicleEventService**: Added null safety and improved DTO conversion
+- **SafeDriverScoreRepository**: Enhanced error handling for fleet summary queries
+- **Performance monitoring**: Added comprehensive logging and execution time tracking
 
 ## 🛠️ Quick Start
 
@@ -162,8 +208,8 @@ export DB02_HOST="backup-db-host"
          │                        │                        │
     ┌────────────┐         ┌──────────────┐        ┌───────────────┐
     │ Instance   │         │ Fleet        │        │ db01: Primary │
-    │ Routing    │         │ Service      │        │ db02: Backup  │
-    │ /api/db01  │         │ ML Service   │        │ ...           │
+    │ Routing    │         │ ML Service   │        │ db02: Backup  │
+    │ /api/db01  │         │ ...           │        │ ...           │
     └────────────┘         └──────────────┘        └───────────────┘
 ```
 

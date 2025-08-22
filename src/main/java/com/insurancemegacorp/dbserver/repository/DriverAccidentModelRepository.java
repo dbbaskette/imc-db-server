@@ -8,11 +8,12 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface DriverAccidentModelRepository extends JpaRepository<DriverAccidentModel, String> {
+public interface DriverAccidentModelRepository extends JpaRepository<DriverAccidentModel, Integer> {
 
-    @Query("SELECT m FROM DriverAccidentModel m WHERE m.status = 'active' ORDER BY m.createdDate DESC LIMIT 1")
+    // Since this is a MADlib output table with typically one row, just get the first one
+    @Query("SELECT m FROM DriverAccidentModel m")
     Optional<DriverAccidentModel> findLatestActiveModel();
 
-    @Query("SELECT m FROM DriverAccidentModel m ORDER BY m.createdDate DESC LIMIT 1")
+    @Query("SELECT m FROM DriverAccidentModel m")
     Optional<DriverAccidentModel> findLatestModel();
 }

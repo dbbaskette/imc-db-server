@@ -2,39 +2,51 @@ package com.insurancemegacorp.dbserver.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "safe_driver_scores")
 public class SafeDriverScore {
     
     @Id
-    @Column(name = "driver_id")
-    private Long driverId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "score_id")
+    private Integer scoreId;
     
-    @Column(name = "score", precision = 5, scale = 2)
+    @Column(name = "driver_id", nullable = false)
+    private Integer driverId;
+    
+    @Column(name = "score", precision = 5, scale = 2, nullable = false)
     private BigDecimal score;
     
-    @Column(name = "risk_category", length = 20)
-    private String riskCategory;
+    @Column(name = "calculation_date", nullable = false)
+    private ZonedDateTime calculationDate;
     
-    @Column(name = "calculation_date")
-    private LocalDateTime calculationDate;
+    @Column(name = "notes")
+    private String notes;
 
     public SafeDriverScore() {}
 
-    public SafeDriverScore(Long driverId, BigDecimal score, String riskCategory, LocalDateTime calculationDate) {
+    public SafeDriverScore(Integer driverId, BigDecimal score, ZonedDateTime calculationDate, String notes) {
         this.driverId = driverId;
         this.score = score;
-        this.riskCategory = riskCategory;
         this.calculationDate = calculationDate;
+        this.notes = notes;
     }
 
-    public Long getDriverId() {
+    public Integer getScoreId() {
+        return scoreId;
+    }
+
+    public void setScoreId(Integer scoreId) {
+        this.scoreId = scoreId;
+    }
+
+    public Integer getDriverId() {
         return driverId;
     }
 
-    public void setDriverId(Long driverId) {
+    public void setDriverId(Integer driverId) {
         this.driverId = driverId;
     }
 
@@ -46,19 +58,19 @@ public class SafeDriverScore {
         this.score = score;
     }
 
-    public String getRiskCategory() {
-        return riskCategory;
-    }
-
-    public void setRiskCategory(String riskCategory) {
-        this.riskCategory = riskCategory;
-    }
-
-    public LocalDateTime getCalculationDate() {
+    public ZonedDateTime getCalculationDate() {
         return calculationDate;
     }
 
-    public void setCalculationDate(LocalDateTime calculationDate) {
+    public void setCalculationDate(ZonedDateTime calculationDate) {
         this.calculationDate = calculationDate;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }

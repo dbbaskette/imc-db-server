@@ -17,6 +17,20 @@ public class DriverPerformanceDto {
 
     public DriverPerformanceDto() {}
 
+    public DriverPerformanceDto(Long driverId, BigDecimal safetyScore, String riskCategory, 
+                               BigDecimal speedCompliance, Integer harshEvents, BigDecimal phoneUsage,
+                               Integer accidents, Integer totalEvents, LocalDateTime calculationDate) {
+        this.driverId = driverId;
+        this.safetyScore = safetyScore;
+        this.riskCategory = riskCategory;
+        this.speedCompliance = speedCompliance;
+        this.harshEvents = harshEvents;
+        this.phoneUsage = phoneUsage;
+        this.accidents = accidents;
+        this.totalEvents = totalEvents;
+        this.calculationDate = calculationDate;
+    }
+
     public Long getDriverId() {
         return driverId;
     }

@@ -85,3 +85,4 @@ Thumbs.db*.yml
 *.properties
 manifest.temp.yml
 cf-manifest.yml
+prompt
