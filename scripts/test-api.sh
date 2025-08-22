@@ -16,6 +16,10 @@ BASE_URL="http://localhost:8084"
 TEST_DB_INSTANCE="db01"
 LOG_FILE="$SCRIPT_DIR/api-test-results.log"
 
+# Cloud Foundry configuration
+APP_NAME="imc-db-server"
+USE_CF_ROUTE=false
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -52,6 +56,35 @@ log_error() {
 
 log_warning() {
     echo -e "${YELLOW}[WARN]${NC} $1" | tee -a "$LOG_FILE"
+}
+
+# Function to get Cloud Foundry route
+get_cf_route() {
+    if ! command -v cf &> /dev/null; then
+        log_error "cf CLI is not installed. Please install Cloud Foundry CLI."
+        return 1
+    fi
+    
+    if ! cf api >/dev/null 2>&1; then
+        log_error "Not logged into Cloud Foundry. Please run: cf login"
+        return 1
+    fi
+    
+    log_test "Getting Cloud Foundry route for $APP_NAME..."
+    
+    # Get the app routes using cf CLI
+    local routes
+    routes=$(cf app "$APP_NAME" --guid 2>/dev/null | xargs -I {} cf curl "/v2/apps/{}/routes" 2>/dev/null | jq -r '.resources[].entity.host + "." + .resources[].entity.domain.name' 2>/dev/null || echo "")
+    
+    if [ -n "$routes" ]; then
+        local first_route=$(echo "$routes" | head -1)
+        BASE_URL="https://$first_route"
+        log_success "Using Cloud Foundry route: $BASE_URL"
+        return 0
+    else
+        log_error "Could not retrieve Cloud Foundry route for $APP_NAME"
+        return 1
+    fi
 }
 
 # Function to test API endpoint
@@ -154,6 +187,12 @@ check_prerequisites() {
         exit 1
     fi
     
+    # Check if cf CLI is installed when using Cloud Foundry
+    if [ "$USE_CF_ROUTE" = true ] && ! command -v cf &> /dev/null; then
+        log_error "cf CLI is not installed. Please install Cloud Foundry CLI."
+        exit 1
+    fi
+    
     log_success "Prerequisites check passed"
     echo ""
 }
@@ -183,6 +222,14 @@ load_config() {
 check_server() {
     log_test "Checking if server is running..."
     
+    # If using Cloud Foundry route, get it first
+    if [ "$USE_CF_ROUTE" = true ]; then
+        if ! get_cf_route; then
+            log_error "Failed to get Cloud Foundry route"
+            exit 1
+        fi
+    fi
+    
     local health_response
     health_response=$(curl -s -w 'HTTP_STATUS:%{http_code}' "$BASE_URL/api/$TEST_DB_INSTANCE/health" 2>/dev/null || echo "ERROR")
     
@@ -190,7 +237,11 @@ check_server() {
         log_success "Server is running at $BASE_URL"
     else
         log_error "Server is not running at $BASE_URL"
-        log "Please start the server with: mvn spring-boot:run"
+        if [ "$USE_CF_ROUTE" = true ]; then
+            log "Please check if the Cloud Foundry app is running: cf app $APP_NAME"
+        else
+            log "Please start the server with: mvn spring-boot:run"
+        fi
         exit 1
     fi
     echo ""
@@ -396,11 +447,13 @@ show_usage() {
     echo "  -u, --url URL       Set base URL (default: http://localhost:8084)"
     echo "  -i, --instance NAME Set database instance name (default: db01)"
     echo "  -v, --verbose       Enable verbose output"
+    echo "  -c, --cf            Use Cloud Foundry route (requires cf CLI)"
     echo ""
     echo "Examples:"
     echo "  $0                           # Run all tests with defaults"
     echo "  $0 -u http://myapp.com       # Test remote server"
     echo "  $0 -i db02                   # Test different database instance"
+    echo "  $0 -c                        # Test Cloud Foundry deployed app"
     echo ""
 }
 
@@ -421,6 +474,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -v|--verbose)
             set -x
+            shift
+            ;;
+        -c|--cf)
+            USE_CF_ROUTE=true
             shift
             ;;
         *)

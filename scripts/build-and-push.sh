@@ -40,6 +40,17 @@ if ! cf api >/dev/null 2>&1; then
     exit 1
 fi
 
+# Check if we're logged in to a specific org/space
+if ! cf target >/dev/null 2>&1; then
+    echo "❌ Please select an org and space: cf target -o <org> -s <space>"
+    exit 1
+fi
+
+# Display current target
+echo "📍 Current target:"
+cf target
+echo ""
+
 # Set environment variables in Cloud Foundry
 echo "⚙️  Setting environment variables..."
 cf set-env "$APP_NAME" DB01_HOST "$DB01_HOST"
@@ -54,5 +65,22 @@ echo "🚀 Pushing to Cloud Foundry..."
 cf push "$APP_NAME" -f manifest.yml
 
 echo "✅ Deployment complete!"
-echo "📊 App URL: https://${APP_NAME}.apps.your-cf-domain.com"
+
+# Get the actual deployed URL
+echo "📊 Getting deployed app URL..."
+if cf app "$APP_NAME" --guid >/dev/null 2>&1; then
+    local routes
+    routes=$(cf app "$APP_NAME" --guid 2>/dev/null | xargs -I {} cf curl "/v2/apps/{}/routes" 2>/dev/null | jq -r '.resources[].entity.host + "." + .resources[].entity.domain.name' 2>/dev/null || echo "")
+    
+    if [ -n "$routes" ]; then
+        local first_route=$(echo "$routes" | head -1)
+        echo "🌐 App URL: https://$first_route"
+    else
+        echo "⚠️  Could not retrieve app URL, check manually with: cf app $APP_NAME"
+    fi
+else
+    echo "⚠️  App not found, check deployment status with: cf app $APP_NAME"
+fi
+
 echo "🔍 Logs: cf logs $APP_NAME --recent"
+echo "🧪 Test the API: ./scripts/test-api.sh -c"
