@@ -1,0 +1,20 @@
+---
+applications:
+  - name: imc-db-server
+    path: target/imc-db-server-1.0.0-SNAPSHOT.jar
+    memory: 1G
+    instances: 2
+    buildpacks:
+      - java_buildpack
+    env:
+      JAVA_OPTS: "-XX:+UseG1GC -XX:MaxMetaspaceSize=256m"
+      JBP_CONFIG_OPEN_JDK_JRE: '{ version: 21.+ }'
+      SPRING_PROFILES_ACTIVE: cloud
+    services:
+      # Uncomment and configure if using CF database services
+      # - greenplum-db01
+    health-check-type: http
+    health-check-http-endpoint: /actuator/health
+    timeout: 180
+    routes:
+      - route: imc-db-server.apps.your-cf-domain.com
