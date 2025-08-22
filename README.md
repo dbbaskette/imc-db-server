@@ -20,6 +20,7 @@
 ```http
 GET /api/{instance}/health                 # Database health check
 GET /api/{instance}/database/info          # Connection status
+GET /api/{instance}/database/stats         # Database statistics
 ```
 
 ### Fleet Management
@@ -33,6 +34,21 @@ GET /api/{instance}/drivers/high-risk-count # High-risk drivers count
 ```http
 GET /api/{instance}/drivers/top-performers?limit=10    # Best performing drivers
 GET /api/{instance}/drivers/high-risk?limit=10         # High-risk drivers
+```
+
+### ML Pipeline Management
+```http
+GET /api/{instance}/ml/model-info          # Current ML model information
+POST /api/{instance}/ml/recalculate        # Start async ML recalculation
+GET /api/{instance}/ml/job-status/{jobId}  # Check job status
+```
+
+### Vehicle Events & Telemetry
+```http
+GET /api/{instance}/vehicle-events?driver_id=123&limit=10  # Query events with filtering
+GET /api/{instance}/vehicle-events/crashes?severity=high   # Crash events only
+GET /api/{instance}/telemetry/events-count                 # Event count statistics  
+POST /api/{instance}/vehicle-events/batch                  # Batch event ingestion
 ```
 
 ### Example API Calls
@@ -146,22 +162,20 @@ mvn clean package -DskipTests
 
 ## 📋 Development Status
 
-**✅ Completed (Phases 1-2)**
-- Core infrastructure and project setup
-- Multi-database configuration and connection management
-- JPA entities and repository pattern
-- Fleet management APIs with query parameters
-- Health check and monitoring endpoints
-- Standardized JSON response format
+**✅ All Phases Completed (1-5)**
+- ✅ **Phase 1-2**: Core infrastructure and database integration
+- ✅ **Phase 3**: ML Pipeline integration with MADlib and async processing  
+- ✅ **Phase 4**: Vehicle events APIs with advanced filtering and analytics
+- ✅ **Phase 5**: Production readiness with testing, security, and monitoring
 
-**🔄 In Progress (Phase 3)**
-- ML Pipeline integration with MADlib
-- Async job processing for ML model recalculation
-
-**📅 Planned (Phases 4-5)**
-- Vehicle events APIs with advanced filtering
-- Performance optimization and caching
-- Production monitoring and security hardening
+### Key Features Implemented
+- **Multi-database support** with instance routing
+- **Complete ML pipeline** with MADlib integration and job tracking
+- **Advanced filtering** for vehicle events with pagination and sorting
+- **Comprehensive testing** including unit tests and Testcontainers integration
+- **Production security** with input sanitization and rate limiting
+- **Performance monitoring** with correlation IDs and execution tracking
+- **Health monitoring** with database connection testing
 
 See [DEVPLAN.md](DEVPLAN.md) for detailed development roadmap.
 
