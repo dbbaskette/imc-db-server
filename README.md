@@ -63,7 +63,8 @@ curl http://localhost:8084/api/db01/health
    
    # Copy and configure database settings
    cp scripts/config.env.template scripts/config.env
-   # Edit scripts/config.env with your database credentials
+   # Edit scripts/config.env with your actual database credentials
+   # IMPORTANT: Never commit config.env - it contains sensitive data
    ```
 
 2. **Source configuration and run**
