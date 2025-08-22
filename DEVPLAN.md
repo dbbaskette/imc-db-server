@@ -1,98 +1,102 @@
 # IMC Database Server Development Plan
 
-<!-- dbplan:start -->
+<!-- devplan:start -->
 
-## Core Infrastructure & Project Setup
-- [x] **INFRA-001**: Initialize Git repository with remote @done
-- [x] **INFRA-002**: Create PROJECT.md with requirements analysis @done
-- [x] **INFRA-003**: Design multi-database architecture pattern @done
-- [x] **INFRA-004**: Create Maven project structure @done
-- [x] **INFRA-005**: Configure Spring Boot with Java 21 @done
-- [x] **INFRA-006**: Set up multi-database configuration classes @done
-- [x] **INFRA-007**: Create config.env template and gitignore @done
-- [x] **INFRA-008**: Implement basic health check endpoint @done
-- [x] **INFRA-009**: Create Cloud Foundry manifest template @done
-- [x] **INFRA-010**: Build deployment script (build-and-push.sh) @done
+## Development Plan
 
-## Database Integration & Core APIs
-- [x] **DB-001**: Design and create JPA entities @done
-- [x] **DB-002**: SafeDriverScore entity implementation @done
-- [x] **DB-003**: DriverMlTrainingData entity implementation @done
-- [x] **DB-004**: DriverAccidentModel entity (basic structure) @done
-- [x] **DB-005**: VehicleEvent entity (future planning) @done
-- [x] **DB-006**: Implement multi-database repository pattern @done
-- [x] **DB-007**: Create DTO classes for API responses @done
-- [x] **DB-008**: Build database configuration factory @done
-- [x] **DB-009**: GET /api/{instance}/fleet/summary endpoint @done
-- [x] **DB-010**: GET /api/{instance}/drivers/active-count endpoint @done
-- [x] **DB-011**: GET /api/{instance}/drivers/high-risk-count endpoint @done
-- [x] **DB-012**: GET /api/{instance}/drivers/top-performers endpoint @done
-- [x] **DB-013**: GET /api/{instance}/drivers/high-risk endpoint @done
-- [x] **DB-014**: Add query parameter filtering (limit parameter) @done
-- [x] **DB-015**: Implement global exception handling @done
-- [x] **DB-016**: Create standardized JSON response format @done
+## Phase: Core Infrastructure & Project Setup
+- [X] Initialize Git repository with remote
+- [X] Create PROJECT.md with requirements analysis
+- [X] Design multi-database architecture pattern
+- [X] Create Maven project structure
+- [X] Configure Spring Boot with Java 21
+- [X] Set up multi-database configuration classes
+- [X] Create config.env template and gitignore
+- [X] Implement basic health check endpoint
+- [X] Create Cloud Foundry manifest template
+- [X] Build deployment script (build-and-push.sh)
 
-## ML Pipeline Integration
-- [ ] **ML-001**: Research MADlib integration patterns @priority(high)
-- [ ] **ML-002**: GET /api/{instance}/ml/model-info endpoint @priority(high)
-- [ ] **ML-003**: POST /api/{instance}/ml/recalculate async pipeline @priority(high)
-- [ ] **ML-004**: Job status tracking system implementation @priority(medium)
-- [ ] **ML-005**: GET /api/{instance}/ml/job-status/{jobId} endpoint @priority(medium)
-- [ ] **ML-006**: Add feature importance endpoints @priority(medium)
-- [ ] **ML-007**: Create transaction management for ML operations @priority(high)
-- [ ] **ML-008**: MADlib model metadata retrieval @priority(medium)
-- [ ] **ML-009**: Async job queue implementation @priority(low)
+## Phase: Database Integration & Core APIs
+- [X] Design and create JPA entities
+- [X] SafeDriverScore entity implementation
+- [X] DriverMlTrainingData entity implementation
+- [X] DriverAccidentModel entity (basic structure)
+- [X] VehicleEvent entity (future planning)
+- [X] Implement multi-database repository pattern
+- [X] Create DTO classes for API responses
+- [X] Build database configuration factory
+- [X] GET /api/{instance}/fleet/summary endpoint
+- [X] GET /api/{instance}/drivers/active-count endpoint
+- [X] GET /api/{instance}/drivers/high-risk-count endpoint
+- [X] GET /api/{instance}/drivers/top-performers endpoint
+- [X] GET /api/{instance}/drivers/high-risk endpoint
+- [X] Add query parameter filtering (limit parameter)
+- [X] Implement global exception handling
+- [X] Create standardized JSON response format
 
-## Advanced Vehicle Events & Analytics
-- [ ] **VE-001**: GET /api/{instance}/vehicle-events with complex filtering @priority(medium)
-- [ ] **VE-002**: GET /api/{instance}/telemetry/events-count endpoint @priority(low)
-- [ ] **VE-003**: POST /api/{instance}/vehicle-events/batch ingestion @priority(medium)
-- [ ] **VE-004**: Advanced query parameter support (where, orderBy) @priority(medium)
-- [ ] **VE-005**: GET /api/{instance}/database/stats endpoint @priority(low)
-- [ ] **VE-006**: Performance optimization for large datasets @priority(high)
-- [ ] **VE-007**: Add pagination support for all list endpoints @priority(medium)
-- [ ] **VE-008**: Query result caching implementation @priority(low)
+## Phase: ML Pipeline Integration
+- [ ] Research MADlib integration patterns
+- [ ] GET /api/{instance}/ml/model-info endpoint
+- [ ] POST /api/{instance}/ml/recalculate async pipeline
+- [ ] Job status tracking system implementation
+- [ ] GET /api/{instance}/ml/job-status/{jobId} endpoint
+- [ ] Add feature importance endpoints
+- [ ] Create transaction management for ML operations
+- [ ] MADlib model metadata retrieval
+- [ ] Async job queue implementation
 
-## Production Readiness & Testing
-- [ ] **TEST-001**: Unit tests for all services and controllers @priority(high)
-- [ ] **TEST-002**: Integration tests with Testcontainers @priority(high)
-- [ ] **TEST-003**: End-to-end API tests @priority(medium)
-- [ ] **SEC-001**: Input sanitization for query parameters @priority(high)
-- [ ] **SEC-002**: SQL injection protection validation @priority(high)
-- [ ] **SEC-003**: Rate limiting implementation @priority(medium)
-- [ ] **MON-001**: Detailed logging with correlation IDs @priority(medium)
-- [ ] **MON-002**: Performance metrics collection @priority(medium)
-- [ ] **MON-003**: Database connection monitoring @priority(high)
-- [ ] **MON-004**: Health check enhancements @priority(low)
-- [ ] **PERF-001**: Load testing and performance tuning @priority(medium)
-- [ ] **DOC-001**: API documentation completion @priority(low)
+## Phase: Advanced Vehicle Events & Analytics
+- [ ] GET /api/{instance}/vehicle-events with complex filtering
+- [ ] GET /api/{instance}/telemetry/events-count endpoint
+- [ ] POST /api/{instance}/vehicle-events/batch ingestion
+- [ ] Advanced query parameter support (where, orderBy)
+- [ ] GET /api/{instance}/database/stats endpoint
+- [ ] Performance optimization for large datasets
+- [ ] Add pagination support for all list endpoints
+- [ ] Query result caching implementation
 
-## Future Enhancements
-- [ ] **CACHE-001**: Redis caching integration @priority(low) @future
-- [ ] **WS-001**: WebSocket support for real-time updates @priority(low) @future
-- [ ] **GQL-001**: GraphQL endpoint (optional) @priority(low) @future
-- [ ] **EXPORT-001**: Data export functionality @priority(low) @future
-- [ ] **ANALYTICS-001**: Advanced analytics and reporting @priority(low) @future
-- [ ] **TENANT-001**: Multi-tenant support expansion @priority(low) @future
+## Phase: Production Readiness & Testing
+- [ ] Unit tests for all services and controllers
+- [ ] Integration tests with Testcontainers
+- [ ] End-to-end API tests
+- [ ] Input sanitization for query parameters
+- [ ] SQL injection protection validation
+- [ ] Rate limiting implementation
+- [ ] Detailed logging with correlation IDs
+- [ ] Performance metrics collection
+- [ ] Database connection monitoring
+- [ ] Health check enhancements
+- [ ] Load testing and performance tuning
+- [ ] API documentation completion
 
-<!-- dbplan:end -->
-
-## Task Dependencies
-
-### Critical Path
-1. **ML-001** → **ML-002** → **ML-003** (ML Pipeline Core)
-2. **VE-006** → **VE-001** → **VE-003** (Vehicle Events Performance)  
-3. **TEST-001** → **TEST-002** → **TEST-003** (Testing Suite)
-
-### High Priority Tasks (Next Sprint)
-- **ML-001**: Research MADlib integration patterns
-- **ML-002**: GET /api/{instance}/ml/model-info endpoint  
-- **ML-003**: POST /api/{instance}/ml/recalculate async pipeline
-- **ML-007**: Create transaction management for ML operations
-- **TEST-001**: Unit tests for all services and controllers
-- **TEST-002**: Integration tests with Testcontainers
+## Phase: Future Enhancements
+- [ ] Redis caching integration
+- [ ] WebSocket support for real-time updates
+- [ ] GraphQL endpoint (optional)
+- [ ] Data export functionality
+- [ ] Advanced analytics and reporting
+- [ ] Multi-tenant support expansion
+<!-- devplan:end -->
 
 ## Development Notes
+
+### Current Status
+- ✅ **Phase 1**: Core Infrastructure (100% - 10 tasks)
+- ✅ **Phase 2**: Database Integration (100% - 16 tasks)
+- 🔄 **Phase 3**: ML Pipeline Integration (0% - 9 tasks)
+- 📅 **Phase 4**: Vehicle Events (0% - 8 tasks)
+- 📅 **Phase 5**: Production Ready (0% - 12 tasks)
+- 📅 **Phase 6**: Future Enhancements (0% - 6 tasks)
+
+**Total: 26/61 tasks completed (42%)**
+
+### High Priority Next Sprint
+- Research MADlib integration patterns
+- GET /api/{instance}/ml/model-info endpoint
+- POST /api/{instance}/ml/recalculate async pipeline
+- Create transaction management for ML operations
+- Unit tests for all services and controllers
+- Integration tests with Testcontainers
 
 ### Architecture Decisions
 - **Multi-Database Pattern**: Instance-based routing with factory pattern
@@ -100,15 +104,7 @@
 - **Query Flexibility**: Safe SQL parameter injection for filtering
 - **Standardized Responses**: Consistent JSON format across all endpoints
 
-### Technical Risks
-- **Query parameter sanitization** needs careful implementation
-- **ML pipeline transaction management** complexity
-- **Multi-database connection pool** management
-- **Cloud Foundry deployment** configuration complexity
-
-### Completion Status
-- ✅ **Phase 1**: Core Infrastructure (100%)
-- ✅ **Phase 2**: Database Integration (100%)  
-- 🔄 **Phase 3**: ML Pipeline Integration (0%)
-- 📅 **Phase 4**: Vehicle Events (0%)
-- 📅 **Phase 5**: Production Ready (0%)
+### Critical Path Dependencies
+1. **ML-001** → **ML-002** → **ML-003** (ML Pipeline Core)
+2. **VE-006** → **VE-001** → **VE-003** (Vehicle Events Performance)
+3. **TEST-001** → **TEST-002** → **TEST-003** (Testing Suite)

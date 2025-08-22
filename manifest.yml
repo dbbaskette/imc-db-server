@@ -1,7 +1,7 @@
 ---
 applications:
   - name: imc-db-server
-    path: target/imc-db-server-1.0.0-SNAPSHOT.jar
+    path: ./target/imc-db-server-1.1.0.jar
     memory: 1G
     instances: 2
     buildpacks:
