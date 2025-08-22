@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./assets/logo.png" alt="IMC Database Server Logo" width="200"/>
+  <img src="./assets/logo.png" alt="IMC Database Server Logo" width="600"/>
   
   # 🚀 **IMC Database Server** 🚀
   
