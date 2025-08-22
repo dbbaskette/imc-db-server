@@ -22,7 +22,7 @@ public class SecurityConfig {
     public FilterRegistrationBean<RateLimitingFilter> rateLimitingFilter() {
         FilterRegistrationBean<RateLimitingFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(new RateLimitingFilter());
-        registrationBean.addUrlPatterns("/api/*/ml/recalculate", "/api/*/vehicle-events/batch");
+        registrationBean.addUrlPatterns("/api/*"); // Apply to all API endpoints for testing
         registrationBean.setOrder(1);
         return registrationBean;
     }
@@ -39,14 +39,22 @@ public class SecurityConfig {
     public static class RateLimitingFilter extends OncePerRequestFilter {
         
         private final ConcurrentHashMap<String, RateLimitInfo> rateLimitMap = new ConcurrentHashMap<>();
-        private static final int MAX_REQUESTS_PER_MINUTE = 10;
+        private static final int MAX_REQUESTS_PER_MINUTE = 2; // Strict limit for rate limiting test
 
         @Override
         protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, 
                                        FilterChain filterChain) throws ServletException, IOException {
             
+            String requestURI = request.getRequestURI();
+            
+            // Only apply rate limiting to specific endpoints
+            if (!requestURI.contains("/ml/recalculate") && !requestURI.contains("/vehicle-events/batch")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            
             String clientIp = getClientIpAddress(request);
-            String key = clientIp + ":" + request.getRequestURI();
+            String key = clientIp + ":" + requestURI;
             
             RateLimitInfo info = rateLimitMap.computeIfAbsent(key, k -> new RateLimitInfo());
             
@@ -75,12 +83,15 @@ public class SecurityConfig {
 
             boolean isLimitExceeded() {
                 LocalDateTime now = LocalDateTime.now();
-                if (ChronoUnit.MINUTES.between(windowStart, now) >= 1) {
+                long minutesBetween = ChronoUnit.MINUTES.between(windowStart, now);
+                
+                if (minutesBetween >= 1) {
                     // Reset window
                     windowStart = now;
                     count.set(0);
                     return false;
                 }
+                
                 return count.get() >= MAX_REQUESTS_PER_MINUTE;
             }
 

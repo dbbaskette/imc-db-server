@@ -3,7 +3,6 @@ package com.insurancemegacorp.dbserver.model;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import java.util.List;
 
 @Entity
 @Table(name = "driver_accident_model")
@@ -15,26 +14,26 @@ public class DriverAccidentModel {
     
     @Column(name = "coef")
     @JdbcTypeCode(SqlTypes.ARRAY)
-    private List<Double> coef;
+    private double[] coef;
     
     @Column(name = "log_likelihood")
     private Double logLikelihood;
     
     @Column(name = "std_err")
     @JdbcTypeCode(SqlTypes.ARRAY)
-    private List<Double> stdErr;
+    private double[] stdErr;
     
     @Column(name = "z_stats")
     @JdbcTypeCode(SqlTypes.ARRAY)
-    private List<Double> zStats;
+    private double[] zStats;
     
     @Column(name = "p_values")
     @JdbcTypeCode(SqlTypes.ARRAY)
-    private List<Double> pValues;
+    private double[] pValues;
     
     @Column(name = "odds_ratios")
     @JdbcTypeCode(SqlTypes.ARRAY)
-    private List<Double> oddsRatios;
+    private double[] oddsRatios;
     
     @Column(name = "condition_no")
     private Double conditionNo;
@@ -45,11 +44,9 @@ public class DriverAccidentModel {
     @Column(name = "num_missing_rows_skipped")
     private Long numMissingRowsSkipped;
     
-
-    
     @Column(name = "variance_covariance")
     @JdbcTypeCode(SqlTypes.ARRAY)
-    private List<Double> varianceCovariance;
+    private double[] varianceCovariance;
 
     public DriverAccidentModel() {}
 
@@ -61,11 +58,11 @@ public class DriverAccidentModel {
         this.id = id;
     }
 
-    public List<Double> getCoef() {
+    public double[] getCoef() {
         return coef;
     }
 
-    public void setCoef(List<Double> coef) {
+    public void setCoef(double[] coef) {
         this.coef = coef;
     }
 
@@ -77,35 +74,35 @@ public class DriverAccidentModel {
         this.logLikelihood = logLikelihood;
     }
 
-    public List<Double> getStdErr() {
+    public double[] getStdErr() {
         return stdErr;
     }
 
-    public void setStdErr(List<Double> stdErr) {
+    public void setStdErr(double[] stdErr) {
         this.stdErr = stdErr;
     }
 
-    public List<Double> getZStats() {
+    public double[] getZStats() {
         return zStats;
     }
 
-    public void setZStats(List<Double> zStats) {
+    public void setZStats(double[] zStats) {
         this.zStats = zStats;
     }
 
-    public List<Double> getPValues() {
+    public double[] getPValues() {
         return pValues;
     }
 
-    public void setPValues(List<Double> pValues) {
+    public void setPValues(double[] pValues) {
         this.pValues = pValues;
     }
 
-    public List<Double> getOddsRatios() {
+    public double[] getOddsRatios() {
         return oddsRatios;
     }
 
-    public void setOddsRatios(List<Double> oddsRatios) {
+    public void setOddsRatios(double[] oddsRatios) {
         this.oddsRatios = oddsRatios;
     }
 
@@ -141,11 +138,11 @@ public class DriverAccidentModel {
         this.id = numIterations; // num_iterations is now the ID field
     }
 
-    public List<Double> getVarianceCovariance() {
+    public double[] getVarianceCovariance() {
         return varianceCovariance;
     }
 
-    public void setVarianceCovariance(List<Double> varianceCovariance) {
+    public void setVarianceCovariance(double[] varianceCovariance) {
         this.varianceCovariance = varianceCovariance;
     }
 }

@@ -41,6 +41,18 @@ public class VehicleEventController {
 
         long startTime = System.currentTimeMillis();
         validateInstance(instance);
+        
+        // Validate event_type if provided
+        if (event_type != null && !isValidEventType(event_type)) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Invalid event type: " + event_type));
+        }
+        
+        // Validate severity if provided
+        if (severity != null && !isValidSeverity(severity)) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Invalid severity: " + severity));
+        }
 
         Page<VehicleEventDto> events = vehicleEventService.findEventsWithFilters(
                 driver_id, vehicle_id, event_type, severity, 
@@ -126,5 +138,39 @@ public class VehicleEventController {
         if (!databaseInstanceManager.isInstanceAvailable(instance)) {
             throw new DatabaseInstanceNotFoundException(instance);
         }
+    }
+    
+    private boolean isValidEventType(String eventType) {
+        if (eventType == null) return true;
+        
+        // Define valid event types based on what the system supports
+        String[] validTypes = {
+            "telematics_event", "acceleration", "braking", "cornering", 
+            "speed_violation", "harsh_driving", "phone_usage", "weather_event",
+            "CRASH", "crash" // Add crash event type
+        };
+        
+        for (String validType : validTypes) {
+            if (validType.equalsIgnoreCase(eventType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean isValidSeverity(String severity) {
+        if (severity == null) return true;
+        
+        // Define valid severity levels
+        String[] validSeverities = {
+            "LOW", "MEDIUM", "HIGH", "CRITICAL", "unknown"
+        };
+        
+        for (String validSeverity : validSeverities) {
+            if (validSeverity.equalsIgnoreCase(severity)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
