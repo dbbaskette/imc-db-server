@@ -1,8 +1,8 @@
 package com.insurancemegacorp.dbserver.config;
 
+import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -19,29 +19,13 @@ import java.util.Properties;
 
 @Configuration
 @EnableJpaRepositories(basePackages = "com.insurancemegacorp.dbserver.repository")
-@EnableConfigurationProperties
 public class DatabaseConfig {
 
     @Bean
     @Primary
-    public DataSource db01DataSource(
-            @Value("${spring.datasource.db01.url}") String url,
-            @Value("${spring.datasource.db01.username}") String username,
-            @Value("${spring.datasource.db01.password}") String password,
-            @Value("${spring.datasource.db01.driver-class-name}") String driverClassName) {
-        
-        HikariDataSource dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl(url);
-        dataSource.setUsername(username);
-        dataSource.setPassword(password);
-        dataSource.setDriverClassName(driverClassName);
-        dataSource.setMaximumPoolSize(20);
-        dataSource.setMinimumIdle(5);
-        dataSource.setIdleTimeout(300000);
-        dataSource.setMaxLifetime(1800000);
-        dataSource.setConnectionTimeout(20000);
-        
-        return dataSource;
+    @ConfigurationProperties("spring.datasource.db01")
+    public DataSource db01DataSource() {
+        return new HikariDataSource();
     }
 
     @Bean

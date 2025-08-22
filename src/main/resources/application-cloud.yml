@@ -1,7 +1,29 @@
+# Cloud Profile Configuration for Cloud Foundry
+# This profile is activated when running in cloud environments
+
 spring:
+  application:
+    name: imc-db-server
+  cloud:
+    service-registry:
+      auto-registration:
+        enabled: true
+        register-management: true
+        fail-fast: false
+    # Service discovery configuration
+    discovery:
+      enabled: true
+      client:
+        enabled: true
+        service-id: ${spring.application.name}
+    # Disable compatibility verifier for Spring Boot 3.5.4 + Spring Cloud 2025.0.0
+    compatibility-verifier:
+      enabled: false
+  
+  # Database configuration using environment variables
   datasource:
     db01:
-      url: jdbc:postgresql://${DB01_HOST}:${DB01_PORT:5432}/${DB01_DATABASE}
+      jdbc-url: jdbc:postgresql://${DB01_HOST}:${DB01_PORT:5432}/${DB01_DATABASE}
       username: ${DB01_USER}
       password: ${DB01_PASSWORD}
       driver-class-name: org.postgresql.Driver
@@ -20,7 +42,33 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+# Eureka configuration handled by Spring Cloud Services auto-configuration
+# when bound to a Service Registry service in Cloud Foundry
+
+# Cloud-specific logging
 logging:
   level:
     com.insurancemegacorp.dbserver: INFO
     org.hibernate.SQL: WARN
+    org.springframework.cloud.netflix.eureka: DEBUG
+    com.netflix.discovery: DEBUG
+    org.springframework.cloud.service: DEBUG
+    org.springframework.cloud.service.registry: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+
+# Cloud-specific management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info,env,configprops,discovery
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  info:
+    env:
+      enabled: true
+    git:
+      mode: full

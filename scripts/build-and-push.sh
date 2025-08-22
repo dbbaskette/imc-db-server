@@ -61,11 +61,10 @@ if cf push "$APP_NAME" -f "$MANIFEST_TEMP"; then
     # Get the actual deployed URL
     echo "📊 Getting deployed app URL..."
     if cf app "$APP_NAME" --guid >/dev/null 2>&1; then
-        local routes
         routes=$(cf app "$APP_NAME" --guid 2>/dev/null | xargs -I {} cf curl "/v2/apps/{}/routes" 2>/dev/null | jq -r '.resources[].entity.host + "." + .resources[].entity.domain.name' 2>/dev/null || echo "")
         
         if [ -n "$routes" ]; then
-            local first_route=$(echo "$routes" | head -1)
+            first_route=$(echo "$routes" | head -1)
             echo "🌐 App URL: https://$first_route"
         else
             echo "⚠️  Could not retrieve app URL, check manually with: cf app $APP_NAME"

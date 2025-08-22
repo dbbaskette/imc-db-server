@@ -1,7 +1,7 @@
 spring:
   datasource:
     db01:
-      url: jdbc:postgresql://${DB01_HOST:localhost}:${DB01_PORT:5432}/${DB01_DATABASE:insurance_megacorp}
+      jdbc-url: jdbc:postgresql://${DB01_HOST:localhost}:${DB01_PORT:5432}/${DB01_DATABASE:insurance_megacorp}
       username: ${DB01_USER:gpadmin}
       password: ${DB01_PASSWORD:password}
       driver-class-name: org.postgresql.Driver

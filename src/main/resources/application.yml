@@ -1,3 +1,6 @@
+# Main Application Configuration
+# This is the default configuration used when no specific profile is active
+
 server:
   port: 8084
 

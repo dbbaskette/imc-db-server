@@ -1,7 +1,7 @@
 ---
 applications:
   - name: imc-db-server
-    path: ./target/imc-db-server-1.2.0.jar
+    path: ./target/imc-db-server-2.0.0.jar
     memory: 1G
     instances: 1
     buildpacks:
@@ -21,6 +21,7 @@ applications:
     services:
       # Uncomment and configure if using CF database services
       # - greenplum-db01
+      - imc-services  # Spring Cloud Service Registry
     health-check-type: http
     health-check-http-endpoint: /actuator/health
     health-check-invocation-timeout: 30
