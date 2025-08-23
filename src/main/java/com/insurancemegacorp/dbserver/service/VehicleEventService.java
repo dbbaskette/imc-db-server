@@ -6,6 +6,7 @@ import com.insurancemegacorp.dbserver.repository.VehicleEventRepository;
 import com.insurancemegacorp.dbserver.util.QueryFilterBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +22,14 @@ public class VehicleEventService {
 
     private final VehicleEventRepository vehicleEventRepository;
     private final QueryFilterBuilder queryFilterBuilder;
+    private final JdbcTemplate jdbcTemplate;
 
     public VehicleEventService(VehicleEventRepository vehicleEventRepository,
-                              QueryFilterBuilder queryFilterBuilder) {
+                              QueryFilterBuilder queryFilterBuilder,
+                              JdbcTemplate jdbcTemplate) {
         this.vehicleEventRepository = vehicleEventRepository;
         this.queryFilterBuilder = queryFilterBuilder;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public Page<VehicleEventDto> findEventsWithFilters(
@@ -84,6 +88,35 @@ public class VehicleEventService {
         stats.put("average_events_per_day", recentEvents / 7.0);
         
         return stats;
+    }
+
+    public Map<String, Object> getTelemetryTableCounts() {
+        Map<String, Object> counts = new HashMap<>();
+        
+        try {
+            // Count vehicle_events table
+            long vehicleEventsCount = vehicleEventRepository.count();
+            counts.put("vehicle_events_count", vehicleEventsCount);
+            
+            // Count vehicle_telemetry_data_v2 table using JdbcTemplate
+            String sql = "SELECT COUNT(*) FROM vehicle_telemetry_data_v2";
+            Long telemetryDataCount = jdbcTemplate.queryForObject(sql, Long.class);
+            counts.put("vehicle_telemetry_data_v2_count", telemetryDataCount != null ? telemetryDataCount : 0L);
+            
+            // Add total count
+            long totalCount = vehicleEventsCount + (telemetryDataCount != null ? telemetryDataCount : 0L);
+            counts.put("total_telemetry_records", totalCount);
+            
+        } catch (Exception e) {
+            // If vehicle_telemetry_data_v2 table doesn't exist, just return vehicle_events count
+            long vehicleEventsCount = vehicleEventRepository.count();
+            counts.put("vehicle_events_count", vehicleEventsCount);
+            counts.put("vehicle_telemetry_data_v2_count", 0L);
+            counts.put("total_telemetry_records", vehicleEventsCount);
+            counts.put("note", "vehicle_telemetry_data_v2 table not accessible");
+        }
+        
+        return counts;
     }
 
     public Page<VehicleEventDto> findHighGForceEvents(Integer limit, Integer offset, String orderBy) {

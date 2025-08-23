@@ -88,7 +88,7 @@ public class MlService {
 
     private MlModelInfoDto convertToDto(DriverAccidentModel model) {
         MlModelInfoDto dto = new MlModelInfoDto();
-        dto.setModelId(model.getId().toString());
+        dto.setModelId(model.getNumIterations().toString());
         dto.setAlgorithm("Logistic Regression");
         dto.setAccuracy(null); // Not available in the new model structure
         dto.setFeatureWeights(null); // Not available in the new model structure

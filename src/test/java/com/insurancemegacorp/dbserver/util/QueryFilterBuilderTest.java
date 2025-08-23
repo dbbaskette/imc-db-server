@@ -26,7 +26,7 @@ class QueryFilterBuilderTest {
         // Then
         assertEquals(100, pageable.getPageSize());
         assertEquals(0, pageable.getPageNumber());
-        assertEquals(Sort.Direction.DESC, pageable.getSort().getOrderFor("eventDate").getDirection());
+        assertEquals(Sort.Direction.DESC, pageable.getSort().getOrderFor("eventTime").getDirection());
     }
 
     @Test
@@ -52,11 +52,11 @@ class QueryFilterBuilderTest {
     @Test
     void testBuildSort_DescendingPrefix() {
         // When
-        Sort sort = queryFilterBuilder.buildSort("-eventDate,+driverId");
+        Sort sort = queryFilterBuilder.buildSort("-eventTime,+driverId");
 
         // Then
         assertEquals(2, sort.stream().count());
-        assertEquals(Sort.Direction.DESC, sort.getOrderFor("eventDate").getDirection());
+        assertEquals(Sort.Direction.DESC, sort.getOrderFor("eventTime").getDirection());
         assertEquals(Sort.Direction.ASC, sort.getOrderFor("driverId").getDirection());
     }
 

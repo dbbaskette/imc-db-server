@@ -9,8 +9,9 @@ import org.hibernate.type.SqlTypes;
 public class DriverAccidentModel {
     
     @Id
-    @Column(name = "num_iterations") // Use num_iterations as a simple ID since there's likely only one model
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "num_iterations")
+    private Integer numIterations;
     
     @Column(name = "coef")
     @JdbcTypeCode(SqlTypes.ARRAY)
@@ -50,12 +51,12 @@ public class DriverAccidentModel {
 
     public DriverAccidentModel() {}
 
-    public Integer getId() {
-        return id;
+    public Integer getNumIterations() {
+        return numIterations;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setNumIterations(Integer numIterations) {
+        this.numIterations = numIterations;
     }
 
     public double[] getCoef() {
@@ -130,13 +131,7 @@ public class DriverAccidentModel {
         this.numMissingRowsSkipped = numMissingRowsSkipped;
     }
 
-    public Integer getNumIterations() {
-        return id; // num_iterations is now the ID field
-    }
 
-    public void setNumIterations(Integer numIterations) {
-        this.id = numIterations; // num_iterations is now the ID field
-    }
 
     public double[] getVarianceCovariance() {
         return varianceCovariance;

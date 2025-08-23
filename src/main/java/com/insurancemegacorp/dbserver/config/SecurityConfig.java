@@ -36,6 +36,15 @@ public class SecurityConfig {
         return registrationBean;
     }
 
+    @Bean
+    public FilterRegistrationBean<CorsFilter> corsFilter() {
+        FilterRegistrationBean<CorsFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new CorsFilter());
+        registrationBean.addUrlPatterns("/api/*");
+        registrationBean.setOrder(0); // CORS should be first
+        return registrationBean;
+    }
+
     public static class RateLimitingFilter extends OncePerRequestFilter {
         
         private final ConcurrentHashMap<String, RateLimitInfo> rateLimitMap = new ConcurrentHashMap<>();
@@ -141,6 +150,29 @@ public class SecurityConfig {
             }
             
             return false;
+        }
+    }
+
+    public static class CorsFilter extends OncePerRequestFilter {
+        
+        @Override
+        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, 
+                                       FilterChain filterChain) throws ServletException, IOException {
+            
+            // Set CORS headers
+            response.setHeader("Access-Control-Allow-Origin", "https://imc-smartdriver-ui.apps.tas-ndc.kuhn-labs.com");
+            response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            response.setHeader("Access-Control-Allow-Headers", "*");
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+            response.setHeader("Access-Control-Max-Age", "3600");
+            
+            // Handle preflight OPTIONS request
+            if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+                response.setStatus(HttpServletResponse.SC_OK);
+                return;
+            }
+            
+            filterChain.doFilter(request, response);
         }
     }
 }

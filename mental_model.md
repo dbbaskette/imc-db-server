@@ -54,6 +54,40 @@ public class HybridService {
 - Need to maintain both data access patterns
 - Potential for inconsistency if schemas change
 
+### Hybrid Data Access for Table Counts
+**Problem**: Need to count rows from tables that may not have JPA entities (e.g., `telemetry_data_v2`).
+
+**Solution**: Combine JPA repository methods for known entities with JdbcTemplate for raw table access.
+
+**Implementation Pattern**:
+```java
+public Map<String, Object> getTableCounts() {
+    Map<String, Object> counts = new HashMap<>();
+    
+    // JPA approach for known entities
+    counts.put("known_table_count", repository.count());
+    
+    // JdbcTemplate approach for raw tables
+    try {
+        String sql = "SELECT COUNT(*) FROM raw_table";
+        Long rawCount = jdbcTemplate.queryForObject(sql, Long.class);
+        counts.put("raw_table_count", rawCount != null ? rawCount : 0L);
+    } catch (Exception e) {
+        // Graceful fallback
+        counts.put("raw_table_count", 0L);
+        counts.put("note", "table not accessible");
+    }
+    
+    return counts;
+}
+```
+
+**Benefits**:
+- **Flexible table access** without requiring entity definitions
+- **Performance optimized** with minimal database round-trips
+- **Graceful error handling** for missing or inaccessible tables
+- **Consistent API patterns** across different data sources
+
 ## Data Flow Architecture
 
 ### ML Model Data Pipeline

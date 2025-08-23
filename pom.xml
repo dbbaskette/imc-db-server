@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.insurancemegacorp</groupId>
     <artifactId>imc-db-server</artifactId>
-    <version>2.0.0</version>
+    <version>3.0.0</version>
     <name>IMC Database Server</name>
     <description>Multi-database Spring Boot service for Insurance MegaCorp</description>
     

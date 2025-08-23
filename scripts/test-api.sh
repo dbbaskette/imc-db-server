@@ -361,6 +361,7 @@ test_vehicle_events() {
     test_endpoint "GET" "/api/$TEST_DB_INSTANCE/vehicle-events/high-gforce" "High G-force events"
     test_endpoint "GET" "/api/$TEST_DB_INSTANCE/vehicle-events/high-gforce?limit=5" "High G-force events (limit 5)"
     test_endpoint "GET" "/api/$TEST_DB_INSTANCE/telemetry/events-count" "Telemetry events count"
+    test_endpoint "GET" "/api/$TEST_DB_INSTANCE/telemetry/table-counts" "Telemetry table counts"
     
     # Test batch ingestion with sample data
     local sample_events='[

@@ -97,6 +97,18 @@ public class VehicleEventController {
         return ResponseEntity.ok(ApiResponse.success(response).withExecutionTime(executionTime));
     }
 
+    @GetMapping("/telemetry/table-counts")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getTelemetryTableCounts(
+            @PathVariable String instance) {
+
+        long startTime = System.currentTimeMillis();
+        validateInstance(instance);
+
+        Map<String, Object> counts = vehicleEventService.getTelemetryTableCounts();
+        long executionTime = System.currentTimeMillis() - startTime;
+        return ResponseEntity.ok(ApiResponse.success(counts).withExecutionTime(executionTime));
+    }
+
     @GetMapping("/database/stats")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getDatabaseStats(
             @PathVariable String instance) {
