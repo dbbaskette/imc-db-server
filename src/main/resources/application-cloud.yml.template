@@ -1,5 +1,10 @@
 # Cloud Profile Configuration for Cloud Foundry
 # This profile is activated when running in cloud environments
+#
+# INSTRUCTIONS:
+# 1. Copy this file to application-cloud.yml
+# 2. Replace all placeholder values (marked with YOUR_* or example values)
+# 3. The application-cloud.yml file is gitignored and will remain private
 
 spring:
   application:
@@ -19,7 +24,7 @@ spring:
     # Disable compatibility verifier for Spring Boot 3.5.4 + Spring Cloud 2025.0.0
     compatibility-verifier:
       enabled: false
-  
+
   # Database configuration using environment variables
   datasource:
     db01:
@@ -33,7 +38,7 @@ spring:
         idle-timeout: 300000
         max-lifetime: 1800000
         connection-timeout: 20000
-        
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -72,3 +77,12 @@ management:
       enabled: true
     git:
       mode: full
+
+# Cloud-specific Security Configuration
+security:
+  rate-limiting:
+    max-requests-per-minute: 2  # Stricter limit in production
+  cors:
+    allowed-origins:
+      - "https://YOUR_FRONTEND_URL.apps.YOUR_DOMAIN.com"
+      - "https://YOUR_MANAGER_URL.apps.YOUR_DOMAIN.com"

@@ -26,3 +26,20 @@ logging:
     org.hibernate.SQL: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{correlationId}] %logger{36} - %msg%n"
+
+# Security Configuration (Default/Local Development)
+security:
+  filters:
+    url-pattern: "/api/*"
+  rate-limiting:
+    max-requests-per-minute: 60  # More permissive for development
+    enabled-endpoints:
+      - "/ml/recalculate"
+      - "/vehicle-events/batch"
+  cors:
+    allowed-origins:
+      - "http://localhost:3000"
+      - "http://localhost:3001"
+      - "http://localhost:8080"
+    allow-credentials: true
+    max-age: 3600

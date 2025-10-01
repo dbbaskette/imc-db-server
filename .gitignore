@@ -86,3 +86,6 @@ Thumbs.db*.yml
 manifest.temp.yml
 cf-manifest.yml
 prompt
+
+# Keep actual cloud configuration private
+application-cloud.yml

@@ -4,6 +4,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,11 +19,14 @@ import java.time.temporal.ChronoUnit;
 @Configuration
 public class SecurityConfig {
 
+    @Autowired
+    private SecurityProperties securityProperties;
+
     @Bean
     public FilterRegistrationBean<RateLimitingFilter> rateLimitingFilter() {
         FilterRegistrationBean<RateLimitingFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(new RateLimitingFilter());
-        registrationBean.addUrlPatterns("/api/*"); // Apply to all API endpoints for testing
+        registrationBean.setFilter(new RateLimitingFilter(securityProperties));
+        registrationBean.addUrlPatterns(securityProperties.getFilters().getUrlPattern());
         registrationBean.setOrder(1);
         return registrationBean;
     }
@@ -31,7 +35,7 @@ public class SecurityConfig {
     public FilterRegistrationBean<InputSanitizationFilter> inputSanitizationFilter() {
         FilterRegistrationBean<InputSanitizationFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(new InputSanitizationFilter());
-        registrationBean.addUrlPatterns("/api/*");
+        registrationBean.addUrlPatterns(securityProperties.getFilters().getUrlPattern());
         registrationBean.setOrder(2);
         return registrationBean;
     }
@@ -39,25 +43,33 @@ public class SecurityConfig {
     @Bean
     public FilterRegistrationBean<CorsFilter> corsFilter() {
         FilterRegistrationBean<CorsFilter> registrationBean = new FilterRegistrationBean<>();
-        registrationBean.setFilter(new CorsFilter());
-        registrationBean.addUrlPatterns("/api/*");
+        registrationBean.setFilter(new CorsFilter(securityProperties));
+        registrationBean.addUrlPatterns(securityProperties.getFilters().getUrlPattern());
         registrationBean.setOrder(0); // CORS should be first
         return registrationBean;
     }
 
     public static class RateLimitingFilter extends OncePerRequestFilter {
-        
+
         private final ConcurrentHashMap<String, RateLimitInfo> rateLimitMap = new ConcurrentHashMap<>();
-        private static final int MAX_REQUESTS_PER_MINUTE = 2; // Strict limit for rate limiting test
+        private final SecurityProperties securityProperties;
+
+        public RateLimitingFilter(SecurityProperties securityProperties) {
+            this.securityProperties = securityProperties;
+        }
 
         @Override
         protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, 
                                        FilterChain filterChain) throws ServletException, IOException {
             
             String requestURI = request.getRequestURI();
-            
-            // Only apply rate limiting to specific endpoints
-            if (!requestURI.contains("/ml/recalculate") && !requestURI.contains("/vehicle-events/batch")) {
+
+            // Only apply rate limiting to configured endpoints
+            boolean shouldApplyRateLimit = securityProperties.getRateLimiting().getEnabledEndpoints()
+                .stream()
+                .anyMatch(requestURI::contains);
+
+            if (!shouldApplyRateLimit) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -65,7 +77,7 @@ public class SecurityConfig {
             String clientIp = getClientIpAddress(request);
             String key = clientIp + ":" + requestURI;
             
-            RateLimitInfo info = rateLimitMap.computeIfAbsent(key, k -> new RateLimitInfo());
+            RateLimitInfo info = rateLimitMap.computeIfAbsent(key, k -> new RateLimitInfo(securityProperties.getRateLimiting().getMaxRequestsPerMinute()));
             
             if (info.isLimitExceeded()) {
                 response.setStatus(429); // HTTP 429 Too Many Requests
@@ -88,20 +100,25 @@ public class SecurityConfig {
 
         private static class RateLimitInfo {
             private final AtomicInteger count = new AtomicInteger(0);
+            private final int maxRequestsPerMinute;
             private LocalDateTime windowStart = LocalDateTime.now();
+
+            public RateLimitInfo(int maxRequestsPerMinute) {
+                this.maxRequestsPerMinute = maxRequestsPerMinute;
+            }
 
             boolean isLimitExceeded() {
                 LocalDateTime now = LocalDateTime.now();
                 long minutesBetween = ChronoUnit.MINUTES.between(windowStart, now);
-                
+
                 if (minutesBetween >= 1) {
                     // Reset window
                     windowStart = now;
                     count.set(0);
                     return false;
                 }
-                
-                return count.get() >= MAX_REQUESTS_PER_MINUTE;
+
+                return count.get() >= maxRequestsPerMinute;
             }
 
             void incrementCount() {
@@ -154,17 +171,28 @@ public class SecurityConfig {
     }
 
     public static class CorsFilter extends OncePerRequestFilter {
-        
+
+        private final SecurityProperties securityProperties;
+
+        public CorsFilter(SecurityProperties securityProperties) {
+            this.securityProperties = securityProperties;
+        }
+
         @Override
-        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, 
+        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                        FilterChain filterChain) throws ServletException, IOException {
-            
-            // Set CORS headers
-            response.setHeader("Access-Control-Allow-Origin", "https://imc-smartdriver-ui.apps.tas-ndc.kuhn-labs.com");
+
+            // Set CORS headers based on configuration
+            String origin = request.getHeader("Origin");
+            if (origin != null && securityProperties.getCors().getAllowedOrigins().contains(origin)) {
+                response.setHeader("Access-Control-Allow-Origin", origin);
+            }
             response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-            response.setHeader("Access-Control-Allow-Headers", "*");
-            response.setHeader("Access-Control-Allow-Credentials", "true");
-            response.setHeader("Access-Control-Max-Age", "3600");
+            response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, Origin, Authorization, X-Requested-With");
+            if (securityProperties.getCors().isAllowCredentials()) {
+                response.setHeader("Access-Control-Allow-Credentials", "true");
+            }
+            response.setHeader("Access-Control-Max-Age", String.valueOf(securityProperties.getCors().getMaxAge()));
             
             // Handle preflight OPTIONS request
             if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
