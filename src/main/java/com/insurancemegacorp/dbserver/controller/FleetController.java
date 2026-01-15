@@ -80,14 +80,25 @@ public class FleetController {
     public ResponseEntity<ApiResponse<List<DriverPerformanceDto>>> getHighRiskDrivers(
             @PathVariable String instance,
             @RequestParam(defaultValue = "10") int limit) {
-        
+
         long startTime = System.currentTimeMillis();
         validateInstance(instance);
-        
+
         List<DriverPerformanceDto> drivers = fleetService.getHighRiskDrivers(limit);
-        
+
         long executionTime = System.currentTimeMillis() - startTime;
         return ResponseEntity.ok(ApiResponse.success(drivers).withExecutionTime(executionTime));
+    }
+
+    @GetMapping("/fleet/score-distribution")
+    public ResponseEntity<ApiResponse<Map<String, Long>>> getScoreDistribution(@PathVariable String instance) {
+        long startTime = System.currentTimeMillis();
+        validateInstance(instance);
+
+        Map<String, Long> distribution = fleetService.getScoreDistribution();
+
+        long executionTime = System.currentTimeMillis() - startTime;
+        return ResponseEntity.ok(ApiResponse.success(distribution).withExecutionTime(executionTime));
     }
 
     private void validateInstance(String instance) {

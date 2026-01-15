@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional(readOnly = true)
@@ -40,5 +41,9 @@ public class FleetService {
     public List<DriverPerformanceDto> getHighRiskDrivers(int limit) {
         Pageable pageable = PageRequest.of(0, Math.min(limit, 1000));
         return safeDriverScoreRepository.findHighRiskDrivers(pageable);
+    }
+
+    public Map<String, Long> getScoreDistribution() {
+        return safeDriverScoreRepository.getScoreDistribution();
     }
 }

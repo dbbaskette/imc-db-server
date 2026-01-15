@@ -8,7 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface SafeDriverScoreRepository extends JpaRepository<SafeDriverScore, Integer> {
@@ -137,5 +139,40 @@ public interface SafeDriverScoreRepository extends JpaRepository<SafeDriverScore
                 ((java.time.ZonedDateTime) row[8]).toLocalDateTime() // calculationDate
             ))
             .toList();
+    }
+
+    @Query(value = """
+        SELECT
+            SUM(CASE WHEN s.score >= 90.0 THEN 1 ELSE 0 END) as excellent,
+            SUM(CASE WHEN s.score >= 80.0 AND s.score < 90.0 THEN 1 ELSE 0 END) as good,
+            SUM(CASE WHEN s.score >= 70.0 AND s.score < 80.0 THEN 1 ELSE 0 END) as average,
+            SUM(CASE WHEN s.score >= 60.0 AND s.score < 70.0 THEN 1 ELSE 0 END) as poor,
+            SUM(CASE WHEN s.score < 60.0 THEN 1 ELSE 0 END) as high_risk
+        FROM (
+            SELECT DISTINCT ON (driver_id) driver_id, score
+            FROM safe_driver_scores
+            ORDER BY driver_id, calculation_date DESC
+        ) s
+        """, nativeQuery = true)
+    List<Object[]> getScoreDistributionRaw();
+
+    default Map<String, Long> getScoreDistribution() {
+        List<Object[]> results = getScoreDistributionRaw();
+        Map<String, Long> distribution = new LinkedHashMap<>();
+        if (results != null && !results.isEmpty()) {
+            Object[] row = results.get(0);
+            distribution.put("excellent", row[0] instanceof Number ? ((Number) row[0]).longValue() : 0L);
+            distribution.put("good", row[1] instanceof Number ? ((Number) row[1]).longValue() : 0L);
+            distribution.put("average", row[2] instanceof Number ? ((Number) row[2]).longValue() : 0L);
+            distribution.put("poor", row[3] instanceof Number ? ((Number) row[3]).longValue() : 0L);
+            distribution.put("highRisk", row[4] instanceof Number ? ((Number) row[4]).longValue() : 0L);
+        } else {
+            distribution.put("excellent", 0L);
+            distribution.put("good", 0L);
+            distribution.put("average", 0L);
+            distribution.put("poor", 0L);
+            distribution.put("highRisk", 0L);
+        }
+        return distribution;
     }
 }
