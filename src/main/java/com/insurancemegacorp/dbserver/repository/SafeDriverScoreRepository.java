@@ -17,7 +17,7 @@ public interface SafeDriverScoreRepository extends JpaRepository<SafeDriverScore
         SELECT
             COUNT(DISTINCT s.driver_id),
             AVG(s.score),
-            SUM(CASE WHEN s.score < 70.0 THEN 1 ELSE 0 END),
+            SUM(CASE WHEN s.score < 60.0 THEN 1 ELSE 0 END),
             COALESCE(SUM(CASE WHEN d.accident_count > 0 THEN 1 ELSE 0 END), 0),
             0.0
         FROM (
@@ -70,19 +70,20 @@ public interface SafeDriverScoreRepository extends JpaRepository<SafeDriverScore
             SELECT DISTINCT ON (driver_id) driver_id, score
             FROM safe_driver_scores
             ORDER BY driver_id, calculation_date DESC
-        ) s WHERE s.score < 70.0
+        ) s WHERE s.score < 60.0
         """, nativeQuery = true)
     long countHighRiskDrivers();
 
     @Query("""
-        SELECT s.driverId, s.score, 
-            CASE WHEN s.score >= 90.0 THEN 'EXCELLENT' 
-                 WHEN s.score >= 80.0 THEN 'GOOD' 
-                 WHEN s.score >= 70.0 THEN 'AVERAGE' 
+        SELECT s.driverId, s.score,
+            CASE WHEN s.score >= 90.0 THEN 'EXCELLENT'
+                 WHEN s.score >= 80.0 THEN 'GOOD'
+                 WHEN s.score >= 70.0 THEN 'AVERAGE'
+                 WHEN s.score >= 60.0 THEN 'POOR'
                  ELSE 'HIGH_RISK' END,
             COALESCE(d.speedComplianceRate, 0), COALESCE(d.harshDrivingEvents, 0), COALESCE(d.phoneUsageRate, 0),
             COALESCE(d.accidentCount, 0), COALESCE(d.totalEvents, 0), s.calculationDate
-        FROM SafeDriverScore s 
+        FROM SafeDriverScore s
         LEFT JOIN DriverMlTrainingData d ON s.driverId = d.driverId
         WHERE s.score >= 80.0
         ORDER BY s.score DESC
@@ -90,16 +91,17 @@ public interface SafeDriverScoreRepository extends JpaRepository<SafeDriverScore
     List<Object[]> findTopPerformersRaw(Pageable pageable);
 
     @Query("""
-        SELECT s.driverId, s.score, 
-            CASE WHEN s.score >= 90.0 THEN 'EXCELLENT' 
-                 WHEN s.score >= 80.0 THEN 'GOOD' 
-                 WHEN s.score >= 70.0 THEN 'AVERAGE' 
+        SELECT s.driverId, s.score,
+            CASE WHEN s.score >= 90.0 THEN 'EXCELLENT'
+                 WHEN s.score >= 80.0 THEN 'GOOD'
+                 WHEN s.score >= 70.0 THEN 'AVERAGE'
+                 WHEN s.score >= 60.0 THEN 'POOR'
                  ELSE 'HIGH_RISK' END,
             COALESCE(d.speedComplianceRate, 0), COALESCE(d.harshDrivingEvents, 0), COALESCE(d.phoneUsageRate, 0),
             COALESCE(d.accidentCount, 0), COALESCE(d.totalEvents, 0), s.calculationDate
-        FROM SafeDriverScore s 
+        FROM SafeDriverScore s
         LEFT JOIN DriverMlTrainingData d ON s.driverId = d.driverId
-        WHERE s.score < 70.0
+        WHERE s.score < 60.0
         ORDER BY s.score ASC
         """)
     List<Object[]> findHighRiskDriversRaw(Pageable pageable);
