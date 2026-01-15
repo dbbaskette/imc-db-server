@@ -63,6 +63,24 @@ public class VehicleEventController {
         return ResponseEntity.ok(ApiResponse.success(events).withExecutionTime(executionTime));
     }
 
+    @GetMapping("/vehicle-events/recent")
+    public ResponseEntity<ApiResponse<Page<VehicleEventDto>>> getRecentVehicleEvents(
+            @PathVariable String instance,
+            @RequestParam(defaultValue = "10") Integer limit) {
+
+        long startTime = System.currentTimeMillis();
+        validateInstance(instance);
+
+        // Get recent events ordered by timestamp descending
+        Page<VehicleEventDto> recentEvents = vehicleEventService.findEventsWithFilters(
+                null, null, null, null, null, null,
+                limit, 0, "event_time DESC"
+        );
+
+        long executionTime = System.currentTimeMillis() - startTime;
+        return ResponseEntity.ok(ApiResponse.success(recentEvents).withExecutionTime(executionTime));
+    }
+
     @GetMapping("/vehicle-events/high-gforce")
     public ResponseEntity<ApiResponse<Page<VehicleEventDto>>> getHighGForceEvents(
             @PathVariable String instance,

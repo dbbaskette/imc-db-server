@@ -9,6 +9,10 @@ spring:
     active: local
   application:
     name: imc-db-server
+  sql:
+    init:
+      mode: always
+      continue-on-error: false
 
 management:
   endpoints:

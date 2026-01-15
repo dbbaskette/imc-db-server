@@ -2,60 +2,49 @@ package com.insurancemegacorp.dbserver.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "driver_ml_training_data")
 public class DriverMlTrainingData {
-    
+
     @Id
     @Column(name = "driver_id")
-    private Integer driverId; // Change to Integer to match database int4
-    
+    private Integer driverId;
+
     @Column(name = "total_events")
     private Long totalEvents;
-    
-    @Column(name = "speed_compliance_rate", precision = 10, scale = 6)
+
+    @Column(name = "speed_compliance_rate")
     private BigDecimal speedComplianceRate;
-    
-    @Column(name = "avg_speed_violation", precision = 10, scale = 6)
-    private BigDecimal avgSpeedViolation;
-    
-    @Column(name = "excessive_speeding_count")
-    private Long excessiveSpeedingCount;
-    
-    @Column(name = "avg_g_force", precision = 10, scale = 6)
+
+    @Column(name = "avg_g_force")
     private BigDecimal avgGForce;
-    
-    @Column(name = "max_g_force", precision = 10, scale = 6)
-    private BigDecimal maxGForce;
-    
+
     @Column(name = "harsh_driving_events")
     private Long harshDrivingEvents;
-    
-    @Column(name = "extreme_events")
-    private Long extremeEvents;
-    
-    @Column(name = "speed_variance", precision = 10, scale = 6)
-    private BigDecimal speedVariance;
-    
-    @Column(name = "gforce_variance", precision = 10, scale = 6)
-    private BigDecimal gforceVariance;
-    
-    @Column(name = "phone_usage_rate", precision = 10, scale = 6)
+
+    @Column(name = "phone_usage_rate")
     private BigDecimal phoneUsageRate;
-    
-    @Column(name = "low_battery_driving_events")
-    private Long lowBatteryDrivingEvents;
-    
-    @Column(name = "avg_speed", precision = 10, scale = 6)
+
+    @Column(name = "speed_variance")
+    private BigDecimal speedVariance;
+
+    @Column(name = "avg_speed")
     private BigDecimal avgSpeed;
-    
-    @Column(name = "max_speed", precision = 10, scale = 6)
+
+    @Column(name = "max_speed")
     private BigDecimal maxSpeed;
-    
+
+    @Column(name = "excessive_speeding_count")
+    private Long excessiveSpeedingCount;
+
+    @Column(name = "last_updated")
+    private OffsetDateTime lastUpdated;
+
     @Column(name = "accident_count")
     private Long accidentCount;
-    
+
     @Column(name = "has_accident")
     private Integer hasAccident;
 
@@ -85,36 +74,12 @@ public class DriverMlTrainingData {
         this.speedComplianceRate = speedComplianceRate;
     }
 
-    public BigDecimal getAvgSpeedViolation() {
-        return avgSpeedViolation;
-    }
-
-    public void setAvgSpeedViolation(BigDecimal avgSpeedViolation) {
-        this.avgSpeedViolation = avgSpeedViolation;
-    }
-
-    public Long getExcessiveSpeedingCount() {
-        return excessiveSpeedingCount;
-    }
-
-    public void setExcessiveSpeedingCount(Long excessiveSpeedingCount) {
-        this.excessiveSpeedingCount = excessiveSpeedingCount;
-    }
-
     public BigDecimal getAvgGForce() {
         return avgGForce;
     }
 
     public void setAvgGForce(BigDecimal avgGForce) {
         this.avgGForce = avgGForce;
-    }
-
-    public BigDecimal getMaxGForce() {
-        return maxGForce;
-    }
-
-    public void setMaxGForce(BigDecimal maxGForce) {
-        this.maxGForce = maxGForce;
     }
 
     public Long getHarshDrivingEvents() {
@@ -125,30 +90,6 @@ public class DriverMlTrainingData {
         this.harshDrivingEvents = harshDrivingEvents;
     }
 
-    public Long getExtremeEvents() {
-        return extremeEvents;
-    }
-
-    public void setExtremeEvents(Long extremeEvents) {
-        this.extremeEvents = extremeEvents;
-    }
-
-    public BigDecimal getSpeedVariance() {
-        return speedVariance;
-    }
-
-    public void setSpeedVariance(BigDecimal speedVariance) {
-        this.speedVariance = speedVariance;
-    }
-
-    public BigDecimal getGforceVariance() {
-        return gforceVariance;
-    }
-
-    public void setGforceVariance(BigDecimal gforceVariance) {
-        this.gforceVariance = gforceVariance;
-    }
-
     public BigDecimal getPhoneUsageRate() {
         return phoneUsageRate;
     }
@@ -157,12 +98,12 @@ public class DriverMlTrainingData {
         this.phoneUsageRate = phoneUsageRate;
     }
 
-    public Long getLowBatteryDrivingEvents() {
-        return lowBatteryDrivingEvents;
+    public BigDecimal getSpeedVariance() {
+        return speedVariance;
     }
 
-    public void setLowBatteryDrivingEvents(Long lowBatteryDrivingEvents) {
-        this.lowBatteryDrivingEvents = lowBatteryDrivingEvents;
+    public void setSpeedVariance(BigDecimal speedVariance) {
+        this.speedVariance = speedVariance;
     }
 
     public BigDecimal getAvgSpeed() {
@@ -179,6 +120,22 @@ public class DriverMlTrainingData {
 
     public void setMaxSpeed(BigDecimal maxSpeed) {
         this.maxSpeed = maxSpeed;
+    }
+
+    public Long getExcessiveSpeedingCount() {
+        return excessiveSpeedingCount;
+    }
+
+    public void setExcessiveSpeedingCount(Long excessiveSpeedingCount) {
+        this.excessiveSpeedingCount = excessiveSpeedingCount;
+    }
+
+    public OffsetDateTime getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(OffsetDateTime lastUpdated) {
+        this.lastUpdated = lastUpdated;
     }
 
     public Long getAccidentCount() {

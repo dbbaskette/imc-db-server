@@ -1,53 +1,20 @@
 package com.insurancemegacorp.dbserver.model;
 
-import jakarta.persistence.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
-@Entity
-@Table(name = "driver_accident_model")
+// POJO for MADlib model data - not a JPA entity
+// MADlib output tables don't have traditional primary keys, so we use JdbcTemplate directly
 public class DriverAccidentModel {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "num_iterations")
-    private Integer numIterations;
-    
-    @Column(name = "coef")
-    @JdbcTypeCode(SqlTypes.ARRAY)
+
     private double[] coef;
-    
-    @Column(name = "log_likelihood")
     private Double logLikelihood;
-    
-    @Column(name = "std_err")
-    @JdbcTypeCode(SqlTypes.ARRAY)
     private double[] stdErr;
-    
-    @Column(name = "z_stats")
-    @JdbcTypeCode(SqlTypes.ARRAY)
     private double[] zStats;
-    
-    @Column(name = "p_values")
-    @JdbcTypeCode(SqlTypes.ARRAY)
     private double[] pValues;
-    
-    @Column(name = "odds_ratios")
-    @JdbcTypeCode(SqlTypes.ARRAY)
     private double[] oddsRatios;
-    
-    @Column(name = "condition_no")
     private Double conditionNo;
-    
-    @Column(name = "num_rows_processed")
     private Long numRowsProcessed;
-    
-    @Column(name = "num_missing_rows_skipped")
     private Long numMissingRowsSkipped;
-    
-    @Column(name = "variance_covariance")
-    @JdbcTypeCode(SqlTypes.ARRAY)
     private double[] varianceCovariance;
+    private Integer numIterations;
 
     public DriverAccidentModel() {}
 
