@@ -14,13 +14,17 @@ import java.util.List;
 public interface SafeDriverScoreRepository extends JpaRepository<SafeDriverScore, Integer> {
 
     @Query(value = """
-        SELECT 
-            COUNT(s.score_id), 
+        SELECT
+            COUNT(DISTINCT s.driver_id),
             AVG(s.score),
             SUM(CASE WHEN s.score < 70.0 THEN 1 ELSE 0 END),
             COALESCE(SUM(CASE WHEN d.accident_count > 0 THEN 1 ELSE 0 END), 0),
             0.0
-        FROM safe_driver_scores s 
+        FROM (
+            SELECT DISTINCT ON (driver_id) driver_id, score
+            FROM safe_driver_scores
+            ORDER BY driver_id, calculation_date DESC
+        ) s
         LEFT JOIN driver_ml_training_data d ON s.driver_id = d.driver_id
         """, nativeQuery = true)
     List<Object[]> getFleetSummaryRaw();
@@ -58,10 +62,16 @@ public interface SafeDriverScoreRepository extends JpaRepository<SafeDriverScore
         }
     }
 
-    @Query("SELECT COUNT(s) FROM SafeDriverScore s")
+    @Query("SELECT COUNT(DISTINCT s.driverId) FROM SafeDriverScore s")
     long countActiveDrivers();
 
-    @Query("SELECT COUNT(s) FROM SafeDriverScore s WHERE s.score < 70.0")
+    @Query(value = """
+        SELECT COUNT(*) FROM (
+            SELECT DISTINCT ON (driver_id) driver_id, score
+            FROM safe_driver_scores
+            ORDER BY driver_id, calculation_date DESC
+        ) s WHERE s.score < 70.0
+        """, nativeQuery = true)
     long countHighRiskDrivers();
 
     @Query("""
